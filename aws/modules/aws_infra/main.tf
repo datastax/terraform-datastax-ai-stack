@@ -37,7 +37,10 @@ module "alb" {
   source  = "terraform-aws-modules/alb/aws"
   version = "~> 9.9.0"
 
-  load_balancer_type = "application"
+  depends_on = [aws_acm_certificate_validation.certificate_validation]
+
+  load_balancer_type         = "application"
+  enable_deletion_protection = false
 
   name = "enterprise-gpts-alb"
   tags = {
@@ -56,10 +59,17 @@ module "alb" {
       description = "Permit incoming HTTP requests from the internet"
       cidr_ipv4   = "0.0.0.0/0"
     }
+    all_https = {
+      from_port   = 443
+      to_port     = 443
+      protocol    = "TCP"
+      description = "Permit incoming HTTPS requests from the internet"
+      cidr_ipv4   = "0.0.0.0/0"
+    }
   }
 
   security_group_egress_rules = {
-    all_http = {
+    all = {
       from_port   = 0
       to_port     = 65535
       protocol    = "TCP"
@@ -69,43 +79,29 @@ module "alb" {
   }
 
   listeners = {
-    #     http = {
-    #       port     = 80
-    #       protocol = "HTTP"
-    #       redirect = {
-    #         port        = 443
-    #         protocol    = "HTTPS"
-    #         status_code = "HTTP_301"
-    #       }
-    #     }
-    #     https = {
-    #       port     = 443
-    #       protocol = "HTTPS"
-    #       rules    = {
-    #         for config in var.components : config.name => {
-    #           actions    = [{ type = "forward", target_group_key = config.name }]
-    #           conditions = [
-    #             {
-    #               host_header = {
-    #                 values = ["${coalesce(config.subdomain, config.name)}.${var.aws_config.domain}"]
-    #               }
-    #             }
-    #           ]
-    #         }
-    #       }
-    #       fixed_response = {
-    #         content_type = "text/plain"
-    #         status_code  = "404"
-    #         message_body = "Not Found"
-    #       }
-    #     }
     http = {
       port     = 80
       protocol = "HTTP"
-      rules    = {
+      redirect = {
+        port        = 443
+        protocol    = "HTTPS"
+        status_code = "HTTP_301"
+      }
+    }
+    https = {
+      port            = 443
+      protocol        = "HTTPS"
+      certificate_arn = aws_acm_certificate.service_certs[0].arn
+      rules           = {
         for config in var.components : config.name => {
           actions    = [{ type = "forward", target_group_key = config.name }]
-          conditions = [{ host_header = { values = [config.domain.name] } }]
+          conditions = [
+            {
+              host_header = {
+                values = [config.domain.name]
+              }
+            }
+          ]
         }
       }
       fixed_response = {
@@ -124,34 +120,6 @@ module "alb" {
       target_type       = "ip"
       create_attachment = false
     }
-  }
-}
-
-data "aws_route53_zone" "primary" {
-  for_each = {
-    for idx, config in var.components : config.name => config
-    if var.aws_config.auto_route53_dns_config == true
-  }
-
-  name         = each.value.domain.hosted_zone_name
-  zone_id      = each.value.domain.hosted_zone_id
-  private_zone = false
-}
-
-resource "aws_route53_record" "service_a_records" {
-  for_each = {
-    for idx, config in var.components : config.name => config
-    if var.aws_config.auto_route53_dns_config == true
-  }
-
-  name    = "${each.value.domain.name}."
-  type    = "A"
-  zone_id = data.aws_route53_zone.primary[each.value.name].zone_id
-
-  alias {
-    name                   = "${module.alb.dns_name}."
-    zone_id                = module.alb.zone_id
-    evaluate_target_health = true
   }
 }
 
@@ -195,5 +163,76 @@ resource "aws_security_group" "ecs_cluster_sg" {
     to_port     = 65535
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+locals {
+  domains      = [for config in var.components : config.domain.name]
+  do_dns_stuff = length(var.components) > 0 && var.aws_config.auto_route53_dns_config == true
+}
+
+data "aws_route53_zone" "primary" {
+  for_each = {
+    for idx, config in var.components : idx => config
+    if local.do_dns_stuff
+  }
+
+  name         = each.value.domain.hosted_zone_name
+  zone_id      = each.value.domain.hosted_zone_id
+  private_zone = false
+}
+
+resource "aws_acm_certificate" "service_certs" {
+  count = local.do_dns_stuff ? 1 : 0
+
+  domain_name               = local.domains[0]
+  validation_method         = "DNS"
+  subject_alternative_names = toset(slice(local.domains, 1, length(local.domains)))
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  tags = {
+    Project = "enterprise-gpts"
+    Name    = "enterprise-gpts-service-certs"
+  }
+}
+
+resource "aws_route53_record" "validation" {
+  for_each = {
+    for idx, dvo in tolist(aws_acm_certificate.service_certs[0].domain_validation_options) : idx => dvo
+  }
+
+  name    = each.value.resource_record_name
+  type    = each.value.resource_record_type
+  records = [each.value.resource_record_value]
+
+  zone_id = data.aws_route53_zone.primary[each.key].zone_id
+  ttl     = 60
+
+  allow_overwrite = true
+}
+
+resource "aws_acm_certificate_validation" "certificate_validation" {
+  count                   = local.do_dns_stuff ? 1 : 0
+  certificate_arn         = aws_acm_certificate.service_certs[0].arn
+  validation_record_fqdns = values(aws_route53_record.validation)[*].fqdn
+}
+
+resource "aws_route53_record" "service_a_records" {
+  for_each = {
+    for idx, config in var.components : idx => config
+    if local.do_dns_stuff
+  }
+
+  name    = "${each.value.domain.name}."
+  type    = "A"
+  zone_id = data.aws_route53_zone.primary[each.key].zone_id
+
+  alias {
+    name                   = "${module.alb.dns_name}."
+    zone_id                = module.alb.zone_id
+    evaluate_target_health = true
   }
 }

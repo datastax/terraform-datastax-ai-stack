@@ -1,7 +1,11 @@
 variable "aws_config" {
   type = object({
-    auto_route53_dns_config = optional(bool)
-    alb_config              = optional(object({
+    domain_config = object({
+      auto_route53_dns_config = optional(bool)
+      auto_https_cert         = optional(bool)
+      https_cert_arn          = optional(string)
+    })
+    alb_config = optional(object({
       vpc_id          = string
       public_subnets  = list(string)
       private_subnets = list(string)
