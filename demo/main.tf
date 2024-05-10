@@ -3,7 +3,7 @@ module "enterprise-gpts-aws" {
 
   domain_config = {
     auto_route53_setup = true
-    auto_https_cert    = true
+    auto_acm_cert      = true
     hosted_zones = {
       default = { name = "enterprise-ai-stack.com." }
     }

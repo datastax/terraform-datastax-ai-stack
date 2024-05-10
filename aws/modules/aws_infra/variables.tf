@@ -8,7 +8,6 @@ variable "domain_config" {
     auto_acm_cert = optional(bool)
     acm_cert_arn  = optional(string)
   })
-  nullable = true
 }
 
 variable "alb_config" {

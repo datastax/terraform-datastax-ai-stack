@@ -35,27 +35,6 @@ locals {
 
 locals {
   certificate_arn = try(coalesce(var.domain_config.acm_cert_arn), aws_acm_certificate.service_certs[0].arn)
-  using_https     = local.certificate_arn != null
-
-  main_listener_actions = {
-    rules = {
-      for config in var.components : config.name => {
-        actions    = [{ type = "forward", target_group_key = config.name }]
-        conditions = [
-          {
-            host_header = {
-              values = [config.domain]
-            }
-          }
-        ]
-      }
-    }
-    fixed_response = {
-      content_type = "text/plain"
-      status_code  = "404"
-      message_body = "Not Found"
-    }
-  }
 }
 
 module "alb" {
@@ -103,28 +82,39 @@ module "alb" {
     }
   }
 
-  listeners = (local.using_https
-    ? {
-      http = {
-        port     = 80
-        protocol = "HTTP"
-        redirect = {
-          port        = 443
-          protocol    = "HTTPS"
-          status_code = "HTTP_301"
+  listeners = {
+    http = {
+      port     = 80
+      protocol = "HTTP"
+      redirect = {
+        port        = 443
+        protocol    = "HTTPS"
+        status_code = "HTTP_301"
+      }
+    }
+    https = {
+      port            = 443
+      protocol        = "HTTPS"
+      certificate_arn = aws_acm_certificate.service_certs[0].arn
+      rules           = {
+        for config in var.components : config.name => {
+          actions    = [{ type = "forward", target_group_key = config.name }]
+          conditions = [
+            {
+              host_header = {
+                values = [config.domain]
+              }
+            }
+          ]
         }
       }
-      https = merge(local.main_listener_actions, {
-        port            = 443
-        protocol        = "HTTPS"
-        certificate_arn = aws_acm_certificate.service_certs[0].arn
-      })
-    } : {
-      http = merge(local.main_listener_actions, {
-        port     = 80
-        protocol = "HTTP"
-      })
-    })
+      fixed_response = {
+        content_type = "text/plain"
+        status_code  = "404"
+        message_body = "Not Found"
+      }
+    }
+  }
 
   target_groups = {
     for config in var.components : config.name => {
@@ -236,17 +226,34 @@ resource "aws_acm_certificate" "service_certs" {
   }
 }
 
+# resource "aws_route53_record" "validation" {
+#   for_each = {
+#     for idx, dvo in tolist(aws_acm_certificate.service_certs[0].domain_validation_options) : idx => dvo
+#     if local.auto_acm_cert
+#   }
+#
+#   name    = each.value.resource_record_name
+#   type    = each.value.resource_record_type
+#   records = [each.value.resource_record_value]
+#
+#   zone_id = data.aws_route53_zone.primary[each.key].zone_id
+#   ttl     = 60
+#
+#   allow_overwrite = true
+# }
+
+locals {
+  dvos = local.auto_acm_cert ? tolist(aws_acm_certificate.service_certs[0].domain_validation_options) : []
+}
+
 resource "aws_route53_record" "validation" {
-  for_each = {
-    for idx, dvo in tolist(aws_acm_certificate.service_certs[0].domain_validation_options) : idx => dvo
-    if auto_acm_cert
-  }
+  count = local.auto_acm_cert ? length(local.domains) : 0
 
-  name    = each.value.resource_record_name
-  type    = each.value.resource_record_type
-  records = [each.value.resource_record_value]
+  name    = local.dvos[count.index]["resource_record_name"]
+  type    = local.dvos[count.index]["resource_record_type"]
+  records = [local.dvos[count.index]["resource_record_value"]]
 
-  zone_id = data.aws_route53_zone.primary[each.key].zone_id
+  zone_id = data.aws_route53_zone.primary[count.index].zone_id
   ttl     = 60
 
   allow_overwrite = true
@@ -255,5 +262,5 @@ resource "aws_route53_record" "validation" {
 resource "aws_acm_certificate_validation" "certificate_validation" {
   count                   = local.auto_acm_cert ? 1 : 0
   certificate_arn         = aws_acm_certificate.service_certs[0].arn
-  validation_record_fqdns = values(aws_route53_record.validation)[*].fqdn
+  validation_record_fqdns = aws_route53_record.validation[*].fqdn
 }

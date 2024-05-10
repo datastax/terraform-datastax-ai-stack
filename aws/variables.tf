@@ -25,6 +25,11 @@ variable "domain_config" {
     condition     = !(var.domain_config.auto_acm_cert == true && var.domain_config.acm_cert_arn != null)
     error_message = "cannot provide a cert if auto_acm_cert is true"
   }
+
+  validation {
+    condition     = !(var.domain_config.auto_acm_cert != true && var.domain_config.acm_cert_arn == null)
+    error_message = "must provide an acm_cert_arn if auto_acm_cert isn't true"
+  }
 }
 
 variable "alb_config" {
