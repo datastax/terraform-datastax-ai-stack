@@ -3,7 +3,7 @@ data "aws_availability_zones" "available" {
 }
 
 locals {
-  create_vpc = var.aws_config != null
+  create_vpc = var.alb_config == null
 }
 
 module "vpc" {
@@ -27,10 +27,35 @@ module "vpc" {
 }
 
 locals {
-  vpc_id          = try(coalesce(var.aws_config.alb_config.vpc_id), module.vpc[0].vpc_id)
-  public_subnets  = try(coalesce(var.aws_config.alb_config.public_subnets), module.vpc[0].public_subnets)
-  private_subnets = try(coalesce(var.aws_config.alb_config.private_subnets), module.vpc[0].private_subnets)
-  security_groups = try(coalesce(var.aws_config.alb_config.security_groups), [module.vpc[0].default_security_group_id])
+  vpc_id          = try(coalesce(var.alb_config.vpc_id), module.vpc[0].vpc_id)
+  public_subnets  = try(coalesce(var.alb_config.public_subnets), module.vpc[0].public_subnets)
+  private_subnets = try(coalesce(var.alb_config.private_subnets), module.vpc[0].private_subnets)
+  security_groups = try(coalesce(var.alb_config.security_groups), [module.vpc[0].default_security_group_id])
+}
+
+locals {
+  certificate_arn = try(coalesce(var.domain_config.acm_cert_arn), aws_acm_certificate.service_certs[0].arn)
+  using_https     = local.certificate_arn != null
+
+  main_listener_actions = {
+    rules = {
+      for config in var.components : config.name => {
+        actions    = [{ type = "forward", target_group_key = config.name }]
+        conditions = [
+          {
+            host_header = {
+              values = [config.domain]
+            }
+          }
+        ]
+      }
+    }
+    fixed_response = {
+      content_type = "text/plain"
+      status_code  = "404"
+      message_body = "Not Found"
+    }
+  }
 }
 
 module "alb" {
@@ -78,39 +103,28 @@ module "alb" {
     }
   }
 
-  listeners = {
-    http = {
-      port     = 80
-      protocol = "HTTP"
-      redirect = {
-        port        = 443
-        protocol    = "HTTPS"
-        status_code = "HTTP_301"
-      }
-    }
-    https = {
-      port            = 443
-      protocol        = "HTTPS"
-      certificate_arn = aws_acm_certificate.service_certs[0].arn
-      rules           = {
-        for config in var.components : config.name => {
-          actions    = [{ type = "forward", target_group_key = config.name }]
-          conditions = [
-            {
-              host_header = {
-                values = [config.domain.name]
-              }
-            }
-          ]
+  listeners = (local.using_https
+    ? {
+      http = {
+        port     = 80
+        protocol = "HTTP"
+        redirect = {
+          port        = 443
+          protocol    = "HTTPS"
+          status_code = "HTTP_301"
         }
       }
-      fixed_response = {
-        content_type = "text/plain"
-        status_code  = "404"
-        message_body = "Not Found"
-      }
-    }
-  }
+      https = merge(local.main_listener_actions, {
+        port            = 443
+        protocol        = "HTTPS"
+        certificate_arn = aws_acm_certificate.service_certs[0].arn
+      })
+    } : {
+      http = merge(local.main_listener_actions, {
+        port     = 80
+        protocol = "HTTP"
+      })
+    })
 
   target_groups = {
     for config in var.components : config.name => {
@@ -132,14 +146,14 @@ module "ecs" {
   fargate_capacity_providers = {
     FARGATE = {
       default_capacity_provider_strategy = {
-        base   = try(coalesce(var.aws_config.fargate_config.capacity_provider_weights.default_base), 0)
-        weight = try(coalesce(var.aws_config.fargate_config.capacity_provider_weights.default_weight), 0)
+        base   = try(coalesce(var.fargate_config.capacity_provider_weights.default_base), 0)
+        weight = try(coalesce(var.fargate_config.capacity_provider_weights.default_weight), 0)
       }
     }
     FARGATE_SPOT = {
       default_capacity_provider_strategy = {
-        base   = try(coalesce(var.aws_config.fargate_config.capacity_provider_weights.spot_base), 0)
-        weight = try(coalesce(var.aws_config.fargate_config.capacity_provider_weights.default_weight), 100)
+        base   = try(coalesce(var.fargate_config.capacity_provider_weights.spot_base), 0)
+        weight = try(coalesce(var.fargate_config.capacity_provider_weights.default_weight), 100)
       }
     }
   }
@@ -167,23 +181,46 @@ resource "aws_security_group" "ecs_cluster_sg" {
 }
 
 locals {
-  domains      = [for config in var.components : config.domain.name]
-  do_dns_stuff = length(var.components) > 0 && var.aws_config.auto_route53_dns_config == true
+  domains      = [for config in var.components : config.domain]
+  hosted_zones = try(var.domain_config.hosted_zones, null)
+
+  auto_route53_setup = try(var.domain_config.auto_route53_setup, null) == true
+  auto_acm_cert      = try(var.domain_config.auto_acm_cert, null) == true
 }
 
 data "aws_route53_zone" "primary" {
   for_each = {
     for idx, config in var.components : idx => config
-    if local.do_dns_stuff
+    if local.auto_route53_setup
   }
 
-  name         = each.value.domain.hosted_zone_name
-  zone_id      = each.value.domain.hosted_zone_id
-  private_zone = false
+  name    = try(local.hosted_zones[each.value.name]["name"], local.hosted_zones["default"]["name"], null)
+  zone_id = try(local.hosted_zones[each.value.name]["id"], local.hosted_zones["default"]["id"], null)
+
+  private_zone = (try(local.hosted_zones[each.value.name]["name"], local.hosted_zones["default"]["name"], null) != null
+    ? false
+    : null)
+}
+
+resource "aws_route53_record" "service_a_records" {
+  for_each = {
+    for idx, config in var.components : idx => config
+    if local.auto_route53_setup
+  }
+
+  name    = "${each.value.domain}."
+  type    = "A"
+  zone_id = data.aws_route53_zone.primary[each.key].zone_id
+
+  alias {
+    name                   = "${module.alb.dns_name}."
+    zone_id                = module.alb.zone_id
+    evaluate_target_health = true
+  }
 }
 
 resource "aws_acm_certificate" "service_certs" {
-  count = local.do_dns_stuff ? 1 : 0
+  count = local.auto_acm_cert ? 1 : 0
 
   domain_name               = local.domains[0]
   validation_method         = "DNS"
@@ -202,6 +239,7 @@ resource "aws_acm_certificate" "service_certs" {
 resource "aws_route53_record" "validation" {
   for_each = {
     for idx, dvo in tolist(aws_acm_certificate.service_certs[0].domain_validation_options) : idx => dvo
+    if auto_acm_cert
   }
 
   name    = each.value.resource_record_name
@@ -215,24 +253,7 @@ resource "aws_route53_record" "validation" {
 }
 
 resource "aws_acm_certificate_validation" "certificate_validation" {
-  count                   = local.do_dns_stuff ? 1 : 0
+  count                   = local.auto_acm_cert ? 1 : 0
   certificate_arn         = aws_acm_certificate.service_certs[0].arn
   validation_record_fqdns = values(aws_route53_record.validation)[*].fqdn
-}
-
-resource "aws_route53_record" "service_a_records" {
-  for_each = {
-    for idx, config in var.components : idx => config
-    if local.do_dns_stuff
-  }
-
-  name    = "${each.value.domain.name}."
-  type    = "A"
-  zone_id = data.aws_route53_zone.primary[each.key].zone_id
-
-  alias {
-    name                   = "${module.alb.dns_name}."
-    zone_id                = module.alb.zone_id
-    evaluate_target_health = true
-  }
 }

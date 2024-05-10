@@ -7,6 +7,3 @@
 !.vscode/*.code-snippets
 .history/
 *.vsix
-
-# Personal demo usage
-demo/

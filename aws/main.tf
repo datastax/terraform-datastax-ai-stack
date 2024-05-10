@@ -26,8 +26,10 @@ module "aws_infra" {
   source = "./modules/aws_infra"
   count  = length(local.components) > 0 ? 1 : 0
 
-  aws_config = var.aws_config
-  components = local.components
+  alb_config     = var.alb_config
+  domain_config  = var.domain_config
+  fargate_config = var.fargate_config
+  components     = local.components
 }
 
 module "assistants" {

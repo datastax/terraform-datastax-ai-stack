@@ -1,23 +1,50 @@
-variable "aws_config" {
+variable "domain_config" {
   type = object({
-    domain_config = optional(object({
-      auto_route53_dns_config = optional(bool)
-      auto_https_cert         = optional(bool)
-      https_cert_arn          = optional(string)
-    }))
-    alb_config = optional(object({
-      vpc_id          = string
-      public_subnets  = list(string)
-      private_subnets = list(string)
-      security_groups = list(string)
-    }))
-    fargate_config = optional(object({
-      capacity_provider_weights = optional(object({
-        default_base   = number
-        default_weight = number
-        spot_weight    = number
-        spot_base      = number
-      }))
+    auto_route53_setup = optional(bool)
+    hosted_zones       = optional(map(object({
+      name = optional(string)
+      id   = optional(string)
+    })))
+    auto_acm_cert = optional(bool)
+    acm_cert_arn  = optional(string)
+  })
+  nullable = true
+  default  = null
+
+  validation {
+    condition     = !(var.domain_config.auto_acm_cert == true && var.domain_config.auto_route53_setup != true)
+    error_message = "auto_acm_cert requires auto_route53_setup to be true"
+  }
+
+  validation {
+    condition     = !(var.domain_config.auto_route53_setup == true && length(var.domain_config.hosted_zones) == 0)
+    error_message = "auto_route53_setup requires hosted_zones to be provided"
+  }
+
+  validation {
+    condition     = !(var.domain_config.auto_acm_cert == true && var.domain_config.acm_cert_arn != null)
+    error_message = "cannot provide a cert if auto_acm_cert is true"
+  }
+}
+
+variable "alb_config" {
+  type = object({
+    vpc_id          = string
+    public_subnets  = list(string)
+    private_subnets = list(string)
+    security_groups = list(string)
+  })
+  nullable = true
+  default  = null
+}
+
+variable "fargate_config" {
+  type = object({
+    capacity_provider_weights = optional(object({
+      default_base   = number
+      default_weight = number
+      spot_weight    = number
+      spot_base      = number
     }))
   })
   nullable = true
@@ -26,26 +53,16 @@ variable "aws_config" {
 
 variable "assistants" {
   type = object({
-    domain = object({
-      name             = string
-      hosted_zone_id   = optional(string)
-      hosted_zone_name = optional(string)
-    })
-    db = optional(object({
+    domain = optional(string)
+    db     = object({
       regions             = set(string)
       deletion_protection = optional(bool)
       cloud_provider      = optional(string)
-    }))
+    })
     containers = optional(object({
       cpu           = optional(number)
       memory        = optional(number)
       desired_count = optional(number)
-    }))
-    infrastructure = optional(object({
-      cluster          = string
-      target_group_arn = string
-      security_groups  = set(string)
-      subnets          = set(string)
     }))
   })
   nullable = true
@@ -54,20 +71,10 @@ variable "assistants" {
 
 variable "langflow" {
   type = object({
-    domain = object({
-      name             = string
-      hosted_zone_id   = optional(string)
-      hosted_zone_name = optional(string)
-    })
+    domain     = optional(string)
     containers = optional(object({
       cpu    = optional(number)
       memory = optional(number)
-    }))
-    infrastructure = optional(object({
-      cluster          = string
-      target_group_arn = string
-      security_groups  = set(string)
-      subnets          = set(string)
     }))
   })
   nullable = true
