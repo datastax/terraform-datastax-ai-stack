@@ -27,14 +27,14 @@ module "vpc" {
 }
 
 locals {
-  vpc_id          = try(coalesce(var.alb_config.vpc_id), module.vpc[0].vpc_id)
-  public_subnets  = try(coalesce(var.alb_config.public_subnets), module.vpc[0].public_subnets)
-  private_subnets = try(coalesce(var.alb_config.private_subnets), module.vpc[0].private_subnets)
-  security_groups = try(coalesce(var.alb_config.security_groups), [module.vpc[0].default_security_group_id])
+  vpc_id          = try(var.alb_config.vpc_id, module.vpc[0].vpc_id)
+  public_subnets  = try(var.alb_config.public_subnets, module.vpc[0].public_subnets)
+  private_subnets = try(var.alb_config.private_subnets, module.vpc[0].private_subnets)
+  security_groups = try(var.alb_config.security_groups, [module.vpc[0].default_security_group_id])
 }
 
 locals {
-  certificate_arn = try(coalesce(var.domain_config.acm_cert_arn), aws_acm_certificate.service_certs[0].arn)
+  certificate_arn = try(coalesce(var.domain_config.acm_cert_arn), aws_acm_certificate.service_cert[0].arn)
 }
 
 module "alb" {
@@ -43,7 +43,6 @@ module "alb" {
 
   depends_on = [aws_acm_certificate_validation.certificate_validation]
 
-  load_balancer_type         = "application"
   enable_deletion_protection = false
 
   name = "enterprise-gpts-alb"
@@ -95,17 +94,11 @@ module "alb" {
     https = {
       port            = 443
       protocol        = "HTTPS"
-      certificate_arn = aws_acm_certificate.service_certs[0].arn
+      certificate_arn = aws_acm_certificate.service_cert[0].arn
       rules           = {
         for config in var.components : config.name => {
           actions    = [{ type = "forward", target_group_key = config.name }]
-          conditions = [
-            {
-              host_header = {
-                values = [config.domain]
-              }
-            }
-          ]
+          conditions = [{ host_header = { values = [config.domain] } }]
         }
       }
       fixed_response = {
@@ -209,7 +202,7 @@ resource "aws_route53_record" "service_a_records" {
   }
 }
 
-resource "aws_acm_certificate" "service_certs" {
+resource "aws_acm_certificate" "service_cert" {
   count = local.auto_acm_cert ? 1 : 0
 
   domain_name               = local.domains[0]
@@ -222,28 +215,12 @@ resource "aws_acm_certificate" "service_certs" {
 
   tags = {
     Project = "enterprise-gpts"
-    Name    = "enterprise-gpts-service-certs"
+    Name    = "enterprise-gpts-service-cert"
   }
 }
 
-# resource "aws_route53_record" "validation" {
-#   for_each = {
-#     for idx, dvo in tolist(aws_acm_certificate.service_certs[0].domain_validation_options) : idx => dvo
-#     if local.auto_acm_cert
-#   }
-#
-#   name    = each.value.resource_record_name
-#   type    = each.value.resource_record_type
-#   records = [each.value.resource_record_value]
-#
-#   zone_id = data.aws_route53_zone.primary[each.key].zone_id
-#   ttl     = 60
-#
-#   allow_overwrite = true
-# }
-
 locals {
-  dvos = local.auto_acm_cert ? tolist(aws_acm_certificate.service_certs[0].domain_validation_options) : []
+  dvos = local.auto_acm_cert ? tolist(aws_acm_certificate.service_cert[0].domain_validation_options) : []
 }
 
 resource "aws_route53_record" "validation" {
@@ -261,6 +238,6 @@ resource "aws_route53_record" "validation" {
 
 resource "aws_acm_certificate_validation" "certificate_validation" {
   count                   = local.auto_acm_cert ? 1 : 0
-  certificate_arn         = aws_acm_certificate.service_certs[0].arn
+  certificate_arn         = aws_acm_certificate.service_cert[0].arn
   validation_record_fqdns = aws_route53_record.validation[*].fqdn
 }
