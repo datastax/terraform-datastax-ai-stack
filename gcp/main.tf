@@ -1,29 +1,46 @@
-data "google_cloud_run_locations" "available" {
-  project = local.project_id
-}
-
-module "gcp_infra" {
-  source     = "./modules/gcp_infra"
-  count      = var.gcp_config.project_options != null ? 1 : 0
-  gcp_config = var.gcp_config
-}
-
 locals {
   create_assistants = var.assistants != null
   create_langflow   = var.langflow != null
 
-  project_id = try(coalesce(var.gcp_config.project_id), module.gcp_infra[0].project_id)
-  location   = try(coalesce(var.gcp_config.cloud_run_location), data.google_cloud_run_locations.available.locations[0])
-
   infrastructure = {
-    project_id     = local.project_id
-    location       = local.location
+    project_id     = module.gcp_infra.project_id
+    location       = module.gcp_infra.location
     cloud_provider = "gcp"
+  }
+
+  components = [
+    for each in [
+      (local.create_assistants ? {
+        name         = module.assistants[0].container_info.name
+        service_name = module.assistants[0].service_name
+        domain       = var.assistants.domain
+      } : null),
+      (local.create_langflow ? {
+        name         = module.langflow[0].container_info.name
+        service_name = module.langflow[0].service_name
+        domain       = var.langflow.domain
+      } : null)
+    ] : each if each != null
+  ]
+}
+
+module "gcp_infra" {
+  source = "./modules/gcp_infra"
+
+  project_config   = var.project_config
+  cloud_run_config = var.cloud_run_config
+
+  components = {
+    for component in local.components : component["name"] => component
   }
 }
 
+output "load_balancer_ip" {
+  value = module.gcp_infra.load_balancer_ip
+}
+
 output "project_id" {
-  value = local.infrastructure.project_id
+  value = module.gcp_infra.project_id
 }
 
 module "assistants" {

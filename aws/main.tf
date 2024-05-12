@@ -24,7 +24,6 @@ locals {
 
 module "aws_infra" {
   source = "./modules/aws_infra"
-  count  = length(local.components) > 0 ? 1 : 0
 
   alb_config     = var.alb_config
   domain_config  = var.domain_config
@@ -40,10 +39,10 @@ module "assistants" {
   config         = var.assistants
 
   infrastructure = {
-    cluster          = module.aws_infra[0].ecs_cluster_id
-    target_group_arn = module.aws_infra[0].target_groups[module.assistants[0].container_info.name].arn
-    security_groups  = module.aws_infra[0].security_groups
-    subnets          = module.aws_infra[0].subnet_ids
+    cluster          = module.aws_infra.ecs_cluster_id
+    target_group_arn = module.aws_infra.target_groups[module.assistants[0].container_info.name].arn
+    security_groups  = module.aws_infra.security_groups
+    subnets          = module.aws_infra.subnet_ids
   }
 }
 
@@ -55,10 +54,10 @@ module "langflow" {
   config         = var.langflow
 
   infrastructure = {
-    cluster          = module.aws_infra[0].ecs_cluster_id
-    target_group_arn = module.aws_infra[0].target_groups[module.langflow[0].container_info.name].arn
-    security_groups  = module.aws_infra[0].security_groups
-    subnets          = module.aws_infra[0].subnet_ids
+    cluster          = module.aws_infra.ecs_cluster_id
+    target_group_arn = module.aws_infra.target_groups[module.langflow[0].container_info.name].arn
+    security_groups  = module.aws_infra.security_groups
+    subnets          = module.aws_infra.subnet_ids
   }
 }
 

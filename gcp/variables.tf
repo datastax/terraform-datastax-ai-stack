@@ -1,4 +1,4 @@
-variable "gcp_config" {
+variable "project_config" {
   type = object({
     project_id      = optional(string)
     project_options = optional(object({
@@ -6,18 +6,21 @@ variable "gcp_config" {
       org_id          = optional(string)
       billing_account = string
     }))
-    cloud_run = object({
-      location    = optional(string)
-      make_public = optional(bool)
-    })
   })
 
   validation {
-    condition     = var.gcp_config.project_id != null && var.gcp_config.project_options == null || var.gcp_config.project_id == null && var.gcp_config.project_options != null
+    condition     = var.project_config.project_id != null && var.project_config.project_options == null || var.project_config.project_id == null && var.project_config.project_options != null
     error_message = "Either project_id or project_options must be set"
   }
+}
 
-  nullable = false
+variable "cloud_run_config" {
+  type = object({
+    location    = optional(string)
+    make_public = optional(bool)
+  })
+  nullable = true
+  default  = null
 }
 
 variable "assistants" {

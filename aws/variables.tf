@@ -8,8 +8,6 @@ variable "domain_config" {
     auto_acm_cert = optional(bool)
     acm_cert_arn  = optional(string)
   })
-  nullable = true
-  default  = null
 
   validation {
     condition     = !(var.domain_config.auto_acm_cert == true && var.domain_config.auto_route53_setup != true)
