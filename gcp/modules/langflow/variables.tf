@@ -1,10 +1,11 @@
 variable "config" {
   type = object({
-    domain           = optional(string)
-    make_public      = optional(bool)
-    container_limits = optional(object({
-      cpu    = optional(number)
-      memory = optional(number)
+    domain     = optional(string)
+    db_url     = optional(string)
+    containers = optional(object({
+      cpu           = optional(number)
+      memory        = optional(number)
+      min_instances = optional(number)
     }))
   })
 }

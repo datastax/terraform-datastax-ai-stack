@@ -34,7 +34,7 @@ locals {
 }
 
 locals {
-  certificate_arn = try(coalesce(var.domain_config.acm_cert_arn), aws_acm_certificate.service_cert[0].arn)
+  certificate_arn = try(aws_acm_certificate.service_cert[0].arn, var.domain_config.acm_cert_arn)
 }
 
 module "alb" {
@@ -94,7 +94,7 @@ module "alb" {
     https = {
       port            = 443
       protocol        = "HTTPS"
-      certificate_arn = aws_acm_certificate.service_cert[0].arn
+      certificate_arn = local.certificate_arn
       rules           = {
         for config in var.components : config.name => {
           actions    = [{ type = "forward", target_group_key = config.name }]

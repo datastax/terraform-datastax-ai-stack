@@ -1,6 +1,6 @@
 variable "project_config" {
   type = object({
-    project_id      = optional(string)
+    project_id = optional(string)
     project_options = optional(object({
       name            = optional(string)
       org_id          = optional(string)
@@ -16,8 +16,7 @@ variable "project_config" {
 
 variable "cloud_run_config" {
   type = object({
-    location    = optional(string)
-    make_public = optional(bool)
+    location = optional(string)
   })
   nullable = true
   default  = null
@@ -26,14 +25,15 @@ variable "cloud_run_config" {
 variable "assistants" {
   type = object({
     domain = optional(string)
-    db     = optional(object({
+    db = optional(object({
       regions             = set(string)
       deletion_protection = optional(bool)
       cloud_provider      = optional(string)
     }))
-    container_limits = optional(object({
-      cpu    = optional(number)
-      memory = optional(number)
+    containers = optional(object({
+      cpu           = optional(number)
+      memory        = optional(number)
+      min_instances = optional(number)
     }))
   })
   default = null
@@ -41,10 +41,12 @@ variable "assistants" {
 
 variable "langflow" {
   type = object({
-    domain           = optional(string)
-    container_limits = optional(object({
-      cpu    = optional(number)
-      memory = optional(number)
+    domain = optional(string)
+    db_url = optional(string)
+    containers = optional(object({
+      cpu           = optional(number)
+      memory        = optional(number)
+      min_instances = optional(number)
     }))
   })
   default = null

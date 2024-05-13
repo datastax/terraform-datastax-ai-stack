@@ -7,3 +7,9 @@ variable "aws_profile" {
   nullable = true
   default  = null
 }
+
+variable "billing_account" {
+  type     = string
+  nullable = true
+  default  = null
+}

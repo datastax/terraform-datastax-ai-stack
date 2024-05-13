@@ -30,7 +30,7 @@ data "aws_iam_policy_document" "execute_command_policy" {
 }
 
 resource "aws_iam_role" "ecs_execution_role" {
-  name_prefix = "ecs_execution_role"
+  name_prefix        = "ecs_execution_role"
   assume_role_policy = data.aws_iam_policy_document.ecs_assume_role_policy.json
 }
 
@@ -51,9 +51,14 @@ resource "aws_ecs_task_definition" "this" {
         ]
         startPeriod = 60
       }
-      environment = [
+      environment = concat([
         { name = "ECS_ENABLE_CONTAINER_METADATA", value = "true" }
-      ]
+      ], [
+        for key, value in var.container_info.env : {
+          name  = key
+          value = value
+        }
+      ])
     }
   ])
 
@@ -70,10 +75,7 @@ resource "aws_ecs_service" "this" {
   task_definition = aws_ecs_task_definition.this.arn
   name            = var.container_info.name
   launch_type     = "FARGATE"
-
-  desired_count = (var.force_desired_count != null
-    ? var.force_desired_count
-    : try(coalesce(var.config.containers.desired_count), 1))
+  desired_count   = try(var.config.containers.min_instances, null)
 
   enable_execute_command = true
 
@@ -84,7 +86,7 @@ resource "aws_ecs_service" "this" {
   load_balancer {
     container_name   = var.container_info.name
     container_port   = var.container_info.port
-    target_group_arn = var.infrastructure.target_group_arn
+    target_group_arn = var.target_group_arn
   }
 
   network_configuration {

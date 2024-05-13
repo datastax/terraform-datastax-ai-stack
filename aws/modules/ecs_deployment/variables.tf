@@ -4,6 +4,7 @@ variable "container_info" {
     image       = string
     port        = number
     health_path = string
+    env         = map(string)
   })
 }
 
@@ -12,21 +13,19 @@ variable "config" {
     containers = optional(object({
       cpu           = optional(number)
       memory        = optional(number)
-      desired_count = optional(number)
+      min_instances = optional(number)
     }))
   })
 }
 
 variable "infrastructure" {
   type = object({
-    cluster          = string
-    target_group_arn = string
-    security_groups  = set(string)
-    subnets          = set(string)
+    cluster         = string
+    security_groups = set(string)
+    subnets         = set(string)
   })
 }
 
-variable "force_desired_count" {
-  type    = number
-  default = null
+variable "target_group_arn" {
+  type = string
 }

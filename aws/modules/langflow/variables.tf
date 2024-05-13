@@ -1,5 +1,6 @@
 variable "config" {
   type = object({
+    db_url = optional(string)
     containers = optional(object({
       cpu    = optional(number)
       memory = optional(number)
@@ -11,12 +12,13 @@ variable "config" {
 variable "infrastructure" {
   type = object({
     cluster          = string
-    target_group_arn = string
     security_groups  = set(string)
     subnets          = set(string)
+    cloud_provider   = string
   })
 }
 
-variable "cloud_provider" {
+variable "target_group_arn" {
   type = string
 }
+

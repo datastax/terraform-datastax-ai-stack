@@ -1,8 +1,13 @@
 locals {
-  cloud_provider = "aws"
-
   create_assistants = var.assistants != null
   create_langflow   = var.langflow != null
+
+  infrastructure = {
+    cluster         = try(module.aws_infra.ecs_cluster_id, null)
+    security_groups = try(module.aws_infra.security_groups, null)
+    subnets         = try(module.aws_infra.subnet_ids, null)
+    cloud_provider  = "aws"
+  }
 
   components = [
     for each in [
@@ -35,30 +40,18 @@ module "assistants" {
   source = "./modules/assistants"
   count  = local.create_assistants ? 1 : 0
 
-  cloud_provider = local.cloud_provider
-  config         = var.assistants
-
-  infrastructure = {
-    cluster          = module.aws_infra.ecs_cluster_id
-    target_group_arn = module.aws_infra.target_groups[module.assistants[0].container_info.name].arn
-    security_groups  = module.aws_infra.security_groups
-    subnets          = module.aws_infra.subnet_ids
-  }
+  infrastructure   = local.infrastructure
+  target_group_arn = module.aws_infra.target_groups[module.assistants[0].container_info.name].arn
+  config           = var.assistants
 }
 
 module "langflow" {
   source = "./modules/langflow"
   count  = local.create_langflow ? 1 : 0
 
-  cloud_provider = local.cloud_provider
-  config         = var.langflow
-
-  infrastructure = {
-    cluster          = module.aws_infra.ecs_cluster_id
-    target_group_arn = module.aws_infra.target_groups[module.langflow[0].container_info.name].arn
-    security_groups  = module.aws_infra.security_groups
-    subnets          = module.aws_infra.subnet_ids
-  }
+  infrastructure   = local.infrastructure
+  target_group_arn = module.aws_infra.target_groups[module.langflow[0].container_info.name].arn
+  config           = var.langflow
 }
 
 module "vector_dbs" {
@@ -68,6 +61,6 @@ module "vector_dbs" {
     for db in var.vector_dbs : db.name => db
   }
 
-  cloud_provider = local.cloud_provider
+  cloud_provider = local.infrastructure.cloud_provider
   config         = each.value
 }

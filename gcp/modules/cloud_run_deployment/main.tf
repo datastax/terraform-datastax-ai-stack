@@ -9,12 +9,13 @@ resource "google_cloud_run_v2_service" "this" {
 
   template {
     containers {
-      image = var.container_info.image
+      image   = var.container_info.image
+      command = var.container_info.cmd
 
       resources {
         limits = {
-          cpu    = try(coalesce(var.config.container_limits.cpu), "1")
-          memory = try(coalesce(var.config.container_limits.memory), "2048Mi")
+          cpu    = try(coalesce(var.config.containers.cpu), "1")
+          memory = try(coalesce(var.config.containers.memory), "2048Mi")
         }
       }
 
@@ -22,6 +23,20 @@ resource "google_cloud_run_v2_service" "this" {
         container_port = var.container_info.port
         name           = "http1"
       }
+
+      dynamic "env" {
+        for_each = var.container_info.env
+
+        content {
+          name  = env.value.name
+          value = env.value.value
+        }
+      }
+    }
+
+    scaling {
+      min_instance_count = try(var.config.containers.min_instances, null)
+      max_instance_count = 100
     }
   }
 

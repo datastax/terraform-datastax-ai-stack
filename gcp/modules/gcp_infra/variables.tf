@@ -16,8 +16,7 @@ variable "project_config" {
 
 variable "cloud_run_config" {
   type = object({
-    location    = optional(string)
-    make_public = optional(bool)
+    location = optional(string)
   })
 }
 

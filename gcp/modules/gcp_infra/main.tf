@@ -43,8 +43,15 @@ resource "google_compute_backend_bucket" "backend_404" {
   enable_cdn  = false
 }
 
+resource "random_id" "url_map" {
+  keepers = {
+    instances = base64encode(jsonencode(var.components))
+  }
+  byte_length = 1
+}
+
 resource "google_compute_url_map" "url_map" {
-  name    = "enterprise-gpts-url-map"
+  name    = "enterprise-gpts-url-map-${random_id.url_map.hex}"
   project = local.project_id
 
   dynamic "host_rule" {
@@ -66,7 +73,7 @@ resource "google_compute_url_map" "url_map" {
   }
 
   default_url_redirect {
-    strip_query = false
+    strip_query            = false
     redirect_response_code = "MOVED_PERMANENTLY_DEFAULT"
   }
 }
@@ -80,6 +87,7 @@ module "lb-http" {
 
   ssl                             = true
   managed_ssl_certificate_domains = values(var.components)[*].domain
+  random_certificate_suffix       = true
   https_redirect                  = true
   url_map                         = google_compute_url_map.url_map.self_link
 

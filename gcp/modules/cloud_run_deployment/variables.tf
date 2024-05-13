@@ -3,16 +3,18 @@ variable "container_info" {
     name  = string
     image = string
     port  = number
+    env   = map(string)
+    cmd   = optional(list(string))
   })
 }
 
 variable "config" {
   type = object({
-    domain           = optional(string)
-    make_public      = optional(bool)
-    container_limits = optional(object({
-      cpu    = optional(number)
-      memory = optional(number)
+    domain      = optional(string)
+    containers  = optional(object({
+      cpu           = optional(number)
+      memory        = optional(number)
+      min_instances = optional(number)
     }))
   })
 }

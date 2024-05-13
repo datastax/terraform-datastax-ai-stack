@@ -1,7 +1,7 @@
 variable "domain_config" {
   type = object({
     auto_route53_setup = optional(bool)
-    hosted_zones       = optional(map(object({
+    hosted_zones = optional(map(object({
       name = optional(string)
       id   = optional(string)
     })))
@@ -57,7 +57,7 @@ variable "fargate_config" {
 variable "assistants" {
   type = object({
     domain = optional(string)
-    db     = object({
+    db = object({
       regions             = set(string)
       deletion_protection = optional(bool)
       cloud_provider      = optional(string)
@@ -65,7 +65,7 @@ variable "assistants" {
     containers = optional(object({
       cpu           = optional(number)
       memory        = optional(number)
-      desired_count = optional(number)
+      min_instances = optional(number)
     }))
   })
   nullable = true
@@ -74,10 +74,12 @@ variable "assistants" {
 
 variable "langflow" {
   type = object({
-    domain     = optional(string)
+    domain = optional(string)
+    db_url = optional(string)
     containers = optional(object({
-      cpu    = optional(number)
-      memory = optional(number)
+      cpu           = optional(number)
+      memory        = optional(number)
+      min_instances = optional(number)
     }))
   })
   nullable = true

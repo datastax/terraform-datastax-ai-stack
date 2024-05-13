@@ -14,8 +14,10 @@ module "assistants_api_db" {
 locals {
   container_info = {
     name  = "astra-assistants"
-    image = "datastax/astra-assistants:v0.1.17"
+    image = "datastax/astra-assistants:v0.1.20"
     port  = 8000
+    env = {}
+    cmd = ["poetry", "run", "uvicorn", "impl.main:app", "--host", "0.0.0.0", "--port", "8000"]
   }
 }
 
