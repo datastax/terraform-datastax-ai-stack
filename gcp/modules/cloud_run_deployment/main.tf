@@ -10,7 +10,14 @@ resource "google_cloud_run_v2_service" "this" {
   template {
     containers {
       image   = var.container_info.image
-      command = var.container_info.cmd
+      command = var.container_info.entrypoint
+
+      liveness_probe {
+        http_get {
+          path = var.container_info.health_path
+        }
+        initial_delay_seconds = 60
+      }
 
       resources {
         limits = {

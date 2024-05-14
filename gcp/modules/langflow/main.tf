@@ -4,10 +4,11 @@ locals {
   } : {}
 
   container_info = {
-    name  = "langflow"
-    image = "langflowai/langflow:latest"
-    port  = 7860
-    env   = merge(local.db_url_env)
+    name        = "langflow"
+    image       = "langflowai/langflow:latest"
+    port        = 7860
+    env         = merge(local.db_url_env)
+    health_path = "/health"
   }
 }
 
