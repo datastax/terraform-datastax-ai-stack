@@ -22,6 +22,13 @@ variable "cloud_run_config" {
   default  = null
 }
 
+variable "domain_config" {
+  type = object({
+    auto_cloud_dns_setup = optional(bool)
+    dns_names = optional(map(string))
+  })
+}
+
 variable "assistants" {
   type = object({
     domain = optional(string)

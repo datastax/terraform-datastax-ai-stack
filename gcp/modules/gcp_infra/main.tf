@@ -17,7 +17,7 @@ module "project-factory" {
   random_project_id = true
   org_id            = try(var.project_config.project_options.org_id, null)
   billing_account   = var.project_config.project_options.billing_account
-  activate_apis     = ["run.googleapis.com"]
+  activate_apis     = ["run.googleapis.com", "dns.googleapis.com"]
 }
 
 resource "random_id" "id" {
@@ -121,6 +121,53 @@ resource "google_compute_region_network_endpoint_group" "serverless_neg" {
   }
 }
 
+locals {
+  dns_names = try(var.domain_config.dns_names, {})
+  auto_cloud_dns_setup = try(var.domain_config.auto_cloud_dns_setup, null) == true
+
+  # Create a temporary grouping of DNS names to components names (dns_names may be duplicated)
+  _dns_names_to_components = flatten([
+    for name, config in var.components : [
+      {
+        dns_name = try(local.dns_names[config.name], local.dns_names["default"])
+        name     = name
+      }
+    ]
+  ])
+
+  # Picks out the unique DNS names
+  unique_dns_names = distinct(local._dns_names_to_components[*]["dns_name"])
+
+  # Create a mapping of DNS names to a singular name which combines the names of the components that use it
+  # e.g. { "example.com" = "langflow-astra-assistants" }
+  dns_name_to_components = {
+    for dns_name in local.unique_dns_names : dns_name =>
+    join("-", [for pair in local._dns_names_to_components : pair["name"] if pair["dns_name"] == dns_name])
+  }
+}
+
+resource "google_dns_managed_zone" "zones" {
+  for_each = local.dns_name_to_components
+
+  name     = "egpts-${each.value}-zone"
+  dns_name = each.key
+  project  = local.project_id
+}
+
+resource "google_dns_record_set" "a_records" {
+  for_each = {
+    for name, config in var.components : name => config
+    if local.auto_cloud_dns_setup
+  }
+
+  name         = each.value.domain
+  managed_zone = google_dns_managed_zone.zones[try(local.dns_names[each.value.name], local.dns_names["default"])].name
+  type         = "A"
+  ttl          = 300
+  rrdatas      = [module.lb-http.external_ip]
+  project      = local.project_id
+}
+
 output "project_id" {
   value = local.project_id
 }
@@ -131,4 +178,10 @@ output "load_balancer_ip" {
 
 output "location" {
   value = local.location
+}
+
+output "name_servers" {
+  value = {
+    for name, zone in google_dns_managed_zone.zones : name => zone.name_servers
+  }
 }

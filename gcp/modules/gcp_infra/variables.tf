@@ -20,6 +20,13 @@ variable "cloud_run_config" {
   })
 }
 
+variable "domain_config" {
+  type = object({
+    auto_cloud_dns_setup = optional(bool)
+    dns_names = optional(map(string))
+  })
+}
+
 variable "components" {
   type = map(object({
     name         = string

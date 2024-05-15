@@ -171,7 +171,7 @@ locals {
   auto_acm_cert      = try(var.domain_config.auto_acm_cert, null) == true
 }
 
-data "aws_route53_zone" "primary" {
+data "aws_route53_zone" "zones" {
   for_each = {
     for idx, config in var.components : idx => config
     if local.auto_route53_setup
@@ -185,7 +185,7 @@ data "aws_route53_zone" "primary" {
     : null)
 }
 
-resource "aws_route53_record" "service_a_records" {
+resource "aws_route53_record" "a_records" {
   for_each = {
     for idx, config in var.components : idx => config
     if local.auto_route53_setup
@@ -193,7 +193,7 @@ resource "aws_route53_record" "service_a_records" {
 
   name    = "${each.value.domain}."
   type    = "A"
-  zone_id = data.aws_route53_zone.primary[each.key].zone_id
+  zone_id = data.aws_route53_zone.zones[each.key].zone_id
 
   alias {
     name                   = "${module.alb.dns_name}."
@@ -230,7 +230,7 @@ resource "aws_route53_record" "validation" {
   type    = local.dvos[count.index]["resource_record_type"]
   records = [local.dvos[count.index]["resource_record_value"]]
 
-  zone_id = data.aws_route53_zone.primary[count.index].zone_id
+  zone_id = data.aws_route53_zone.zones[count.index].zone_id
   ttl     = 60
 
   allow_overwrite = true

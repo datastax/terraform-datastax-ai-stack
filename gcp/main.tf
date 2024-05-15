@@ -29,6 +29,7 @@ module "gcp_infra" {
 
   project_config   = var.project_config
   cloud_run_config = var.cloud_run_config
+  domain_config    = var.domain_config
 
   components = {
     for component in local.components : component["name"] => component

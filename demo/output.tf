@@ -1,15 +1,7 @@
-# output "vpc_id" {
-#   value = module.enterprise-gpts-aws.vpc_id
-# }
-#
-# output "alb_dns_name" {
-#   value = module.enterprise-gpts-aws.alb_dns_name
+# output "enterprise-gpts-aws" {
+#   value = module.enterprise-gpts-aws
 # }
 
-output "project_name" {
-  value = module.enterprise-gpts-gcp.project_id
-}
-
-output "load_balancer_ip" {
-  value = module.enterprise-gpts-gcp.load_balancer_ip
+output "enterprise-gpts-gcp" {
+  value = module.enterprise-gpts-gcp
 }

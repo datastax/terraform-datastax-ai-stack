@@ -15,9 +15,6 @@
 #
 #   assistants = {
 #     domain = "assistants.enterprise-ai-stack.com"
-#     containers = {
-#       min_instances = 1
-#     }
 #     db = {
 #       regions = ["us-east-2"]
 #       deletion_protection = false
@@ -34,15 +31,19 @@ module "enterprise-gpts-gcp" {
     }
   }
 
+  domain_config = {
+    auto_cloud_dns_setup = true
+    dns_names = {
+      default = "gcp.enterprise-ai-stack.com."
+    }
+  }
+
   langflow = {
-    domain = "langflow.enterprise-ai-stack.com"
+    domain = "langflow.gcp.enterprise-ai-stack.com."
   }
 
   assistants = {
-    domain = "assistants.enterprise-ai-stack.com"
-    containers = {
-      min_instances = 1
-    }
+    domain = "assistants.gcp.enterprise-ai-stack.com."
     db = {
       regions = ["us-east1"]
       deletion_protection = false
