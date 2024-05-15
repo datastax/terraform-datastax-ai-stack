@@ -33,8 +33,8 @@ module "enterprise-gpts-gcp" {
 
   domain_config = {
     auto_cloud_dns_setup = true
-    dns_names = {
-      default = "gcp.enterprise-ai-stack.com."
+    managed_zones = {
+      default = { dns_name = "gcp.enterprise-ai-stack.com." }
     }
   }
 
@@ -45,7 +45,7 @@ module "enterprise-gpts-gcp" {
   assistants = {
     domain = "assistants.gcp.enterprise-ai-stack.com."
     db = {
-      regions = ["us-east1"]
+      regions             = ["us-east1"]
       deletion_protection = false
     }
   }

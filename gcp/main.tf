@@ -11,17 +11,30 @@ locals {
   components = [
     for each in [
       (local.create_assistants ? {
-        name         = module.assistants[0].container_info.name
+        name         = "assistants"
         service_name = module.assistants[0].service_name
         domain       = var.assistants.domain
       } : null),
       (local.create_langflow ? {
-        name         = module.langflow[0].container_info.name
+        name         = "langflow"
         service_name = module.langflow[0].service_name
         domain       = var.langflow.domain
       } : null)
     ] : each if each != null
   ]
+}
+
+check "domain_config" {
+  assert {
+    condition = !var.domain_config.auto_cloud_dns_setup || alltrue([
+      for component in local.components[*]["name"] : (try(
+        var.domain_config.managed_zones[component],
+        var.domain_config.managed_zones["default"],
+        null
+      ) != null)
+    ])
+    error_message = "If managed_zones is set, a managed zone must be provided for every component"
+  }
 }
 
 module "gcp_infra" {

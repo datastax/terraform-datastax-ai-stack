@@ -1,6 +1,6 @@
 variable "project_config" {
   type = object({
-    project_id = optional(string)
+    project_id      = optional(string)
     project_options = optional(object({
       name            = optional(string)
       org_id          = optional(string)
@@ -24,15 +24,41 @@ variable "cloud_run_config" {
 
 variable "domain_config" {
   type = object({
-    auto_cloud_dns_setup = optional(bool)
-    dns_names = optional(map(string))
+    auto_cloud_dns_setup = bool
+    managed_zones        = optional(map(object({
+      dns_name  = optional(string)
+      zone_name = optional(string)
+    })))
   })
+  nullable = false
+
+  default = {
+    auto_cloud_dns_setup = false
+  }
+
+  validation {
+    condition     = !var.domain_config.auto_cloud_dns_setup || var.domain_config.managed_zones != null
+    error_message = "If auto_cloud_dns_setup is true, managed_zones must be set"
+  }
+
+  validation {
+    condition     = var.domain_config.auto_cloud_dns_setup || var.domain_config.managed_zones == null
+    error_message = "If auto_cloud_dns_setup is false, managed_zones must not be set"
+  }
+
+  validation {
+    condition = var.domain_config.managed_zones == null || alltrue([
+      for component, zone in coalesce(var.domain_config.managed_zones, {}) :
+      (length(compact([zone.dns_name, zone.zone_name])) == 1)
+    ])
+    error_message = "If managed_zones is set, (exactly) one of either dns_name or zone_name must be set"
+  }
 }
 
 variable "assistants" {
   type = object({
     domain = optional(string)
-    db = optional(object({
+    db     = optional(object({
       regions             = set(string)
       deletion_protection = optional(bool)
       cloud_provider      = optional(string)
@@ -48,8 +74,8 @@ variable "assistants" {
 
 variable "langflow" {
   type = object({
-    domain = optional(string)
-    db_url = optional(string)
+    domain     = optional(string)
+    db_url     = optional(string)
     containers = optional(object({
       cpu           = optional(number)
       memory        = optional(number)

@@ -7,11 +7,6 @@ variable "project_config" {
       billing_account = string
     }))
   })
-
-  validation {
-    condition     = var.project_config.project_id != null && var.project_config.project_options == null || var.project_config.project_id == null && var.project_config.project_options != null
-    error_message = "Either project_id or project_options must be set"
-  }
 }
 
 variable "cloud_run_config" {
@@ -22,8 +17,11 @@ variable "cloud_run_config" {
 
 variable "domain_config" {
   type = object({
-    auto_cloud_dns_setup = optional(bool)
-    dns_names = optional(map(string))
+    auto_cloud_dns_setup = bool
+    managed_zones        = optional(map(object({
+      dns_name  = optional(string)
+      zone_name = optional(string)
+    })))
   })
 }
 
