@@ -20,32 +20,9 @@ module "project-factory" {
   activate_apis     = ["run.googleapis.com", "dns.googleapis.com"]
 }
 
-resource "random_id" "id" {
-  byte_length = 8
-}
-
-resource "google_storage_bucket" "bucket_404" {
-  name     = "enterprise-gpts-404-bucket-${random_id.id.hex}"
-  project  = local.project_id
-  location = local.location
-}
-
-resource "google_storage_bucket_object" "not_found_page" {
-  name    = "404.html"
-  bucket  = google_storage_bucket.bucket_404.name
-  content = "Not Found"
-}
-
-resource "google_compute_backend_bucket" "backend_404" {
-  name        = "backend-404"
-  project     = local.project_id
-  bucket_name = google_storage_bucket.bucket_404.name
-  enable_cdn  = false
-}
-
 resource "random_id" "url_map" {
   keepers = {
-    instances = base64encode(jsonencode(var.components))
+    instances = base64encode(jsonencode(keys(var.components)))
   }
   byte_length = 1
 }
