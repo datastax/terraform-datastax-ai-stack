@@ -1,9 +1,9 @@
 variable "domain_config" {
   type = object({
     auto_route53_setup = optional(bool)
-    hosted_zones = optional(map(object({
-      name = optional(string)
-      id   = optional(string)
+    hosted_zones       = optional(map(object({
+      zone_name = optional(string)
+      zone_id   = optional(string)
     })))
     auto_acm_cert = optional(bool)
     acm_cert_arn  = optional(string)
@@ -57,7 +57,7 @@ variable "fargate_config" {
 variable "assistants" {
   type = object({
     domain = optional(string)
-    db = object({
+    db     = object({
       regions             = set(string)
       deletion_protection = optional(bool)
       cloud_provider      = optional(string)
@@ -74,8 +74,8 @@ variable "assistants" {
 
 variable "langflow" {
   type = object({
-    domain = optional(string)
-    db_url = optional(string)
+    domain     = optional(string)
+    db_url     = optional(string)
     containers = optional(object({
       cpu           = optional(number)
       memory        = optional(number)

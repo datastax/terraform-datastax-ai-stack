@@ -169,6 +169,11 @@ locals {
 
   auto_route53_setup = try(var.domain_config.auto_route53_setup, null) == true
   auto_acm_cert      = try(var.domain_config.auto_acm_cert, null) == true
+
+  hosted_zones_lut = {
+    for idx, config in var.components : config.name =>
+    try(local.hosted_zones[config.name], local.hosted_zones["default"])
+  }
 }
 
 data "aws_route53_zone" "zones" {
@@ -177,12 +182,10 @@ data "aws_route53_zone" "zones" {
     if local.auto_route53_setup
   }
 
-  name    = try(local.hosted_zones[each.value.name]["name"], local.hosted_zones["default"]["name"], null)
-  zone_id = try(local.hosted_zones[each.value.name]["id"], local.hosted_zones["default"]["id"], null)
+  name    = local.hosted_zones_lut[each.value.name]["zone_name"]
+  zone_id = local.hosted_zones_lut[each.value.name]["zone_id"]
 
-  private_zone = (try(local.hosted_zones[each.value.name]["name"], local.hosted_zones["default"]["name"], null) != null
-    ? false
-    : null)
+  private_zone = false
 }
 
 resource "aws_route53_record" "a_records" {

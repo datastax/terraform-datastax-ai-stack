@@ -3,8 +3,9 @@ variable "container_info" {
     name        = string
     image       = string
     port        = number
-    health_path = string
     env         = map(string)
+    entrypoint  = optional(list(string))
+    health_path = string
   })
 }
 

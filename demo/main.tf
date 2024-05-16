@@ -5,7 +5,8 @@
 #     auto_route53_setup = true
 #     auto_acm_cert      = true
 #     hosted_zones = {
-#       default = { name = "enterprise-ai-stack.com." }
+# #       default = { zone_name = "enterprise-ai-stack.com." }
+#       default = { zone_id = "Z08745491XC1YEB1BPY5H" }
 #     }
 #   }
 #
@@ -16,7 +17,7 @@
 #   assistants = {
 #     domain = "assistants.enterprise-ai-stack.com"
 #     db = {
-#       regions = ["us-east-2"]
+#       regions             = ["us-east-2"]
 #       deletion_protection = false
 #     }
 #   }
@@ -39,11 +40,11 @@ module "enterprise-gpts-gcp" {
   }
 
   langflow = {
-    domain = "langflow.gcp.enterprise-ai-stack.com."
+    domain = "langflow.gcp.enterprise-ai-stack.com"
   }
 
   assistants = {
-    domain = "assistants.gcp.enterprise-ai-stack.com."
+    domain = "assistants.gcp.enterprise-ai-stack.com"
     db = {
       regions             = ["us-east1"]
       deletion_protection = false

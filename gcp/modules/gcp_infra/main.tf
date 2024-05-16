@@ -57,7 +57,7 @@ resource "google_compute_url_map" "url_map" {
 
   default_url_redirect {
     strip_query            = false
-    redirect_response_code = "MOVED_PERMANENTLY_DEFAULT"
+    redirect_response_code = "FOUND"
   }
 }
 
@@ -65,7 +65,7 @@ module "lb-http" {
   source  = "terraform-google-modules/lb-http/google//modules/serverless_negs"
   version = "~> 10.0"
 
-  name    = "enterprise-gpts-lb"
+  name    = "enterprise-gpts-lb-${random_id.url_map.hex}"
   project = local.project_id
 
   ssl                             = true
@@ -73,6 +73,7 @@ module "lb-http" {
   random_certificate_suffix       = true
   https_redirect                  = true
   url_map                         = google_compute_url_map.url_map.self_link
+  create_url_map                  = false
 
   backends = {
     for name, component in var.components : name => {
@@ -158,7 +159,7 @@ resource "google_dns_record_set" "a_records" {
     if local.auto_cloud_dns_setup
   }
 
-  name         = each.value.domain
+  name         = "${each.value.domain}."
   managed_zone = local.managed_zones_lut[each.key]
   type         = "A"
   ttl          = 300

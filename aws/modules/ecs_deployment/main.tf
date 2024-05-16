@@ -59,6 +59,7 @@ resource "aws_ecs_task_definition" "this" {
           value = value
         }
       ])
+      command = var.container_info.entrypoint
     }
   ])
 
