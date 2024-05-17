@@ -1,6 +1,6 @@
 variable "domain_config" {
   type = object({
-    auto_route53_setup = optional(bool)
+    auto_route53_setup = bool
     hosted_zones       = optional(map(object({
       zone_name = optional(string)
       zone_id   = optional(string)
@@ -8,6 +8,7 @@ variable "domain_config" {
     auto_acm_cert = optional(bool)
     acm_cert_arn  = optional(string)
   })
+  nullable = false
 
   validation {
     condition     = !(var.domain_config.auto_acm_cert == true && var.domain_config.auto_route53_setup != true)
@@ -37,8 +38,7 @@ variable "alb_config" {
     private_subnets = list(string)
     security_groups = list(string)
   })
-  nullable = true
-  default  = null
+  default = null
 }
 
 variable "fargate_config" {
@@ -50,8 +50,7 @@ variable "fargate_config" {
       spot_base      = number
     }))
   })
-  nullable = true
-  default  = null
+  default = null
 }
 
 variable "assistants" {
@@ -69,8 +68,7 @@ variable "assistants" {
       max_instances = optional(number)
     }))
   })
-  nullable = true
-  default  = null
+  default = null
 }
 
 variable "langflow" {
@@ -84,8 +82,7 @@ variable "langflow" {
       max_instances = optional(number)
     }))
   })
-  nullable = true
-  default  = null
+  default = null
 }
 
 variable "vector_dbs" {
@@ -96,7 +93,8 @@ variable "vector_dbs" {
     cloud_provider      = optional(string)
     deletion_protection = optional(bool)
   }))
-  default = []
+  nullable = false
+  default  = []
 }
 
 # variable "chat_ui" {

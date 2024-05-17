@@ -7,6 +7,7 @@ variable "project_config" {
       billing_account = string
     }))
   })
+  nullable = false
 
   validation {
     condition     = var.project_config.project_id != null && var.project_config.project_options == null || var.project_config.project_id == null && var.project_config.project_options != null
@@ -18,7 +19,6 @@ variable "cloud_run_config" {
   type = object({
     location = optional(string)
   })
-  nullable = true
   default  = null
 }
 
