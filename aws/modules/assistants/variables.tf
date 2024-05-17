@@ -8,7 +8,8 @@ variable "config" {
     containers = optional(object({
       cpu           = optional(number)
       memory        = optional(number)
-      desired_count = optional(number)
+      min_instances = optional(number)
+      max_instances = optional(number)
     }))
   })
   nullable = true
@@ -16,10 +17,10 @@ variable "config" {
 
 variable "infrastructure" {
   type = object({
-    cluster          = string
-    security_groups  = set(string)
-    subnets          = set(string)
-    cloud_provider   = string
+    cluster         = string
+    security_groups = set(string)
+    subnets         = set(string)
+    cloud_provider  = string
   })
 }
 

@@ -16,6 +16,7 @@ variable "config" {
       cpu           = optional(number)
       memory        = optional(number)
       min_instances = optional(number)
+      max_instances = optional(number)
     }))
   })
 }

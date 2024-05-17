@@ -66,6 +66,7 @@ variable "assistants" {
       cpu           = optional(number)
       memory        = optional(number)
       min_instances = optional(number)
+      max_instances = optional(number)
     }))
   })
   nullable = true
@@ -80,6 +81,7 @@ variable "langflow" {
       cpu           = optional(number)
       memory        = optional(number)
       min_instances = optional(number)
+      max_instances = optional(number)
     }))
   })
   nullable = true

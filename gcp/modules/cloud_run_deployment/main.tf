@@ -43,7 +43,7 @@ resource "google_cloud_run_v2_service" "this" {
 
     scaling {
       min_instance_count = try(var.config.containers.min_instances, null)
-      max_instance_count = 100
+      max_instance_count = try(var.config.containers.max_instances, 100)
     }
   }
 

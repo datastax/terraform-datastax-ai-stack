@@ -49,7 +49,7 @@ resource "aws_ecs_task_definition" "this" {
         command = [
           "CMD-SHELL", "curl -f http://localhost:${var.container_info.port}/${var.container_info.health_path} || exit 1"
         ]
-        startPeriod = 60
+        startPeriod = 120
       }
       environment = concat([
         { name = "ECS_ENABLE_CONTAINER_METADATA", value = "true" }
@@ -76,13 +76,9 @@ resource "aws_ecs_service" "this" {
   task_definition = aws_ecs_task_definition.this.arn
   name            = var.container_info.name
   launch_type     = "FARGATE"
-  desired_count   = try(var.config.containers.min_instances, null)
+  desired_count   = try(var.config.containers.desired_count, 1)
 
   enable_execute_command = true
-
-  lifecycle {
-    ignore_changes = [desired_count]
-  }
 
   load_balancer {
     container_name   = var.container_info.name
@@ -93,5 +89,51 @@ resource "aws_ecs_service" "this" {
   network_configuration {
     security_groups = var.infrastructure.security_groups
     subnets         = var.infrastructure.subnets
+  }
+}
+
+resource "aws_appautoscaling_target" "this" {
+  min_capacity       = var.config.min_instances
+  max_capacity       = var.config.max_instances
+  resource_id        = "service/${var.infrastructure.cluster}/${aws_ecs_service.this.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+resource "aws_appautoscaling_policy" "cpu_tracking" {
+  name               = "${aws_ecs_service.this.name}-cpu-tracking"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.this.resource_id
+  scalable_dimension = aws_appautoscaling_target.this.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.this.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    target_value       = 80
+
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+
+    scale_out_cooldown  = 60
+    scale_in_cooldown   = 60
+  }
+}
+
+resource "aws_appautoscaling_policy" "mem_tracking" {
+  name               = "${aws_ecs_service.this.name}-mem-tracking"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.this.resource_id
+  scalable_dimension = aws_appautoscaling_target.this.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.this.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    target_value       = 80
+
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
+    }
+
+    scale_out_cooldown  = 60
+    scale_in_cooldown   = 60
   }
 }
