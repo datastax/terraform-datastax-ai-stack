@@ -5,7 +5,7 @@ locals {
   infrastructure = {
     cluster         = try(module.aws_infra.ecs_cluster_id, null)
     security_groups = try(module.aws_infra.security_groups, null)
-    subnets         = try(module.aws_infra.subnet_ids, null)
+    subnets         = try(module.aws_infra.private_subnets, null)
     cloud_provider  = "aws"
   }
 

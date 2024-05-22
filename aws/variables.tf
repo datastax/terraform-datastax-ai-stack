@@ -57,7 +57,7 @@ variable "assistants" {
   type = object({
     domain = optional(string)
     db     = object({
-      regions             = set(string)
+      regions             = optional(set(string))
       deletion_protection = optional(bool)
       cloud_provider      = optional(string)
     })
@@ -88,7 +88,7 @@ variable "langflow" {
 variable "vector_dbs" {
   type = list(object({
     name                = string
-    regions             = set(string)
+    regions             = optional(set(string))
     keyspace            = optional(string)
     cloud_provider      = optional(string)
     deletion_protection = optional(bool)

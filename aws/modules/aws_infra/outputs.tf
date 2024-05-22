@@ -18,6 +18,6 @@ output "security_groups" {
   value = [aws_security_group.ecs_cluster_sg.id]
 }
 
-output "subnet_ids" {
+output "private_subnets" {
   value = local.private_subnets
 }

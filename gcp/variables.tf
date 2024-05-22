@@ -19,7 +19,7 @@ variable "cloud_run_config" {
   type = object({
     location = optional(string)
   })
-  default  = null
+  default = null
 }
 
 variable "domain_config" {
@@ -59,7 +59,7 @@ variable "assistants" {
   type = object({
     domain = optional(string)
     db     = optional(object({
-      regions             = set(string)
+      regions             = optional(set(string))
       deletion_protection = optional(bool)
       cloud_provider      = optional(string)
     }))
@@ -90,7 +90,7 @@ variable "langflow" {
 variable "vector_dbs" {
   type = list(object({
     name                = string
-    regions             = set(string)
+    regions             = optional(set(string))
     keyspace            = optional(string)
     cloud_provider      = optional(string)
     deletion_protection = optional(bool)

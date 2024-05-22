@@ -93,8 +93,8 @@ resource "aws_ecs_service" "this" {
 }
 
 resource "aws_appautoscaling_target" "this" {
-  min_capacity       = var.config.min_instances
-  max_capacity       = var.config.max_instances
+  min_capacity       = try(coalesce(var.config.min_instances), 1)
+  max_capacity       = try(coalesce(var.config.max_instances), 20)
   resource_id        = "service/${var.infrastructure.cluster}/${aws_ecs_service.this.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
@@ -108,14 +108,14 @@ resource "aws_appautoscaling_policy" "cpu_tracking" {
   service_namespace  = aws_appautoscaling_target.this.service_namespace
 
   target_tracking_scaling_policy_configuration {
-    target_value       = 80
+    target_value = 80
 
     predefined_metric_specification {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
 
-    scale_out_cooldown  = 60
-    scale_in_cooldown   = 60
+    scale_out_cooldown = 60
+    scale_in_cooldown  = 60
   }
 }
 
@@ -127,13 +127,13 @@ resource "aws_appautoscaling_policy" "mem_tracking" {
   service_namespace  = aws_appautoscaling_target.this.service_namespace
 
   target_tracking_scaling_policy_configuration {
-    target_value       = 80
+    target_value = 80
 
     predefined_metric_specification {
       predefined_metric_type = "ECSServiceAverageMemoryUtilization"
     }
 
-    scale_out_cooldown  = 60
-    scale_in_cooldown   = 60
+    scale_out_cooldown = 60
+    scale_in_cooldown  = 60
   }
 }

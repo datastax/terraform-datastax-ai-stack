@@ -23,7 +23,6 @@ module "enterprise-gpts-aws" {
       desired_count = 1
     }
     db = {
-      regions             = ["us-east-2"]
       deletion_protection = false
     }
   }
