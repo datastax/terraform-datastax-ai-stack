@@ -30,7 +30,7 @@ locals {
 module "aws_infra" {
   source = "./modules/aws_infra"
 
-  alb_config     = var.alb_config
+  alb_config     = var.infrastructure
   domain_config  = var.domain_config
   fargate_config = var.fargate_config
   components     = local.components

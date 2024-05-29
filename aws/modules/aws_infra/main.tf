@@ -129,14 +129,14 @@ module "ecs" {
   fargate_capacity_providers = {
     FARGATE = {
       default_capacity_provider_strategy = {
-        base   = try(coalesce(var.fargate_config.capacity_provider_weights.default_base), 0)
+        base   = try(coalesce(var.fargate_config.capacity_provider_weights.default_base), 20)
         weight = try(coalesce(var.fargate_config.capacity_provider_weights.default_weight), 0)
       }
     }
     FARGATE_SPOT = {
       default_capacity_provider_strategy = {
         base   = try(coalesce(var.fargate_config.capacity_provider_weights.spot_base), 0)
-        weight = try(coalesce(var.fargate_config.capacity_provider_weights.default_weight), 100)
+        weight = try(coalesce(var.fargate_config.capacity_provider_weights.default_weight), 80)
       }
     }
   }

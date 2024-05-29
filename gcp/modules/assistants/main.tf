@@ -18,7 +18,7 @@ locals {
     port        = 8000
     entrypoint  = ["poetry", "run", "uvicorn", "impl.main:app", "--host", "0.0.0.0", "--port", "8000"]
     health_path = "/v1/health"
-    env = {}
+    env         = var.config.env
   }
 }
 

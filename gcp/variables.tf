@@ -1,6 +1,6 @@
 variable "project_config" {
   type = object({
-    project_id = optional(string)
+    project_id      = optional(string)
     project_options = optional(object({
       name            = optional(string)
       org_id          = optional(string)
@@ -45,16 +45,12 @@ variable "cloud_run_config" {
 variable "domain_config" {
   type = object({
     auto_cloud_dns_setup = bool
-    managed_zones = optional(map(object({
+    managed_zones        = optional(map(object({
       dns_name  = optional(string)
       zone_name = optional(string)
     })))
   })
   nullable = false
-
-  default = {
-    auto_cloud_dns_setup = false
-  }
 
   validation {
     condition     = !var.domain_config.auto_cloud_dns_setup || var.domain_config.managed_zones != null
@@ -77,7 +73,7 @@ variable "domain_config" {
   description = <<EOF
     Options for setting up domain names and DNS records.
 
-    auto_cloud_dns_setup: If true, Cloud DNS will be automatically set up. managed_zones must be set if this is true. If true, a name_servers map will be output; otherwise, you must set each domain to the output load_balancer_ip.
+    auto_cloud_dns_setup: If true, Cloud DNS will be automatically set up. managed_zones must be set if this is true. If true, a name_servers map will be output; otherwise, you must set each domain to the output load_balancer_ip w/ an A record.
 
     managed_zones: A map of components (or a default value) to their managed zones. The valid keys are {default, langflow, assistants}. For each, either dns_name or zone_name must be set.
       dns_name: The DNS name (e.g. "example.com.") to use for the managed zone (which will be created).
@@ -88,7 +84,8 @@ variable "domain_config" {
 variable "assistants" {
   type = object({
     domain = string
-    db = optional(object({
+    env    = optional(map(string))
+    db     = optional(object({
       regions             = optional(set(string))
       deletion_protection = optional(bool)
       cloud_provider      = optional(string)
@@ -105,7 +102,9 @@ variable "assistants" {
   description = <<EOF
     Options for the Astra Assistant API service.
 
-    domain: The domain name to use for the service; used in the URL mapping. 
+    domain: The domain name to use for the service; used in the URL mapping.
+
+    env: Environment variables to set for the service.
 
     db: Options for the database Astra Assistants uses.
       regions: The regions to deploy the database to. Defaults to the first available region.
@@ -122,8 +121,8 @@ variable "assistants" {
 
 variable "langflow" {
   type = object({
-    domain = string
-    db_url = optional(string)
+    domain     = string
+    env        = optional(map(string))
     containers = optional(object({
       cpu           = optional(number)
       memory        = optional(number)
@@ -138,7 +137,7 @@ variable "langflow" {
 
     domain: The domain name to use for the service; used in the URL mapping. 
 
-    db_url: Sets the LANGFLOW_DATABASE_URL environment variable for the service.
+    env: Environment variables to set for the service.
 
     containers: Options for the Cloud Run service.
       cpu: The amount of CPU to allocate to the service. Defaults to 1.

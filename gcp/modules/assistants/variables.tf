@@ -1,11 +1,12 @@
 variable "config" {
   type = object({
-    db = object({
+    domain = optional(string)
+    env    = optional(map(string))
+    db     = object({
       regions             = optional(set(string))
       deletion_protection = optional(bool)
       cloud_provider      = optional(string)
     })
-    domain     = optional(string)
     containers = optional(object({
       cpu           = optional(number)
       memory        = optional(number)

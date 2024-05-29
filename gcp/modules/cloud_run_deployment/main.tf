@@ -32,7 +32,7 @@ resource "google_cloud_run_v2_service" "this" {
       }
 
       dynamic "env" {
-        for_each = var.container_info.env
+        for_each = coalesce(var.container_info.env, {})
 
         content {
           name  = env.value.name

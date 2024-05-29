@@ -1,13 +1,9 @@
 locals {
-  db_url_env = var.config.db_url != null ? {
-    LANGFLOW_DATABASE_URL = var.config.db_url
-  } : {}
-
   container_info = {
     name        = "langflow"
     image       = "langflowai/langflow:latest"
     port        = 7860
-    env         = merge(local.db_url_env)
+    env         = var.config.env
     health_path = "/health"
   }
 }

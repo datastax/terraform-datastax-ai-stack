@@ -1,6 +1,6 @@
 variable "config" {
   type = object({
-    db_url     = optional(string)
+    env        = optional(map(string))
     containers = optional(object({
       cpu           = optional(number)
       memory        = optional(number)

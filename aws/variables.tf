@@ -29,9 +29,23 @@ variable "domain_config" {
     condition     = !(var.domain_config.auto_acm_cert != true && var.domain_config.acm_cert_arn == null)
     error_message = "must provide an acm_cert_arn if auto_acm_cert isn't true"
   }
+
+  description = <<EOF
+    Options for setting up domain names and DNS records.
+
+    auto_route53_setup: If true, Route53 will be automatically set up. hosted_zones must be set if this is true. Otherwise, you must set each domain to the output load_balancer_ip w/ an A record.
+
+    hosted_zones: A map of components (or a default value) to their hosted_zones zones. The valid keys are {default, langflow, assistants}. For each, either zone_name or zone_id must be set.
+      zone_name: The DNS name (e.g. "example.com.") of the existing hosted zone to use.
+      zone_id: The ID of the existing hosted zone to use.
+
+    auto_acm_cert: If true, an ACM certificate will be automatically set up. Only available if auto_route53_setup is true. Otherwise, you must provide a certificate ARN.
+
+    acm_cert_arn: The ARN of the ACM certificate to use. Required if auto_acm_cert is false.
+  EOF
 }
 
-variable "alb_config" {
+variable "infrastructure" {
   type = object({
     vpc_id          = string
     public_subnets  = list(string)
@@ -39,6 +53,15 @@ variable "alb_config" {
     security_groups = list(string)
   })
   default = null
+
+  description = <<EOF
+    Required fields to attach the ALB and ECS instances to. If not set, a new VPC will be created w/ a default security group.
+
+    vpc_id: The ID of the VPC to create the ALB in.
+    public_subnets: A list of public subnet IDs to create the ALB in.
+    private_subnets: A list of private subnet IDs to create the ECS instances in.
+    security_groups: A list of security group IDs to attach to the ALB.
+  EOF
 }
 
 variable "fargate_config" {
@@ -51,11 +74,22 @@ variable "fargate_config" {
     }))
   })
   default = null
+
+  description = <<EOF
+    Sets global options for the ECS Fargate instances.
+
+    capacity_provider_weights: The weights to assign to the capacity providers. If not set, it's a 20/80 split between Fargate and Fargate Spot.
+      default_base: The base number of tasks to run on Fargate.
+      default_weight: The relative weight for Fargate when scaling tasks.
+      spot_base: The base number of tasks to run on Fargate Spot.
+      spot_weight: The relative weight for Fargate Spot when scaling tasks.
+  EOF
 }
 
 variable "assistants" {
   type = object({
     domain = optional(string)
+    env    = optional(map(string))
     db     = object({
       regions             = optional(set(string))
       deletion_protection = optional(bool)
@@ -69,12 +103,31 @@ variable "assistants" {
     }))
   })
   default = null
+
+  description = <<EOF
+    Options for the Astra Assistant API service.
+
+    domain: The domain name to use for the service; used in the listener routing rules.
+
+    env: Environment variables to set for the service.
+
+    db: Options for the database Astra Assistants uses.
+      regions: The regions to deploy the database to. Defaults to the first available region.
+      deletion_protection: Whether to enable deletion protection on the database.
+      cloud_provider: The cloud provider to use for the database. Defaults to "gcp".
+
+    containers: Options for the Cloud Run service.
+      cpu: The amount of CPU to allocate to the service. Defaults to 1.
+      memory: The amount of memory to allocate to the service. Defaults to 2048Mi.
+      min_instances: The minimum number of instances to run. Defaults to 0.
+      max_instances: The maximum number of instances to run. Defaults to 100.
+  EOF
 }
 
 variable "langflow" {
   type = object({
     domain     = optional(string)
-    db_url     = optional(string)
+    env        = optional(map(string))
     containers = optional(object({
       cpu           = optional(number)
       memory        = optional(number)
@@ -83,6 +136,20 @@ variable "langflow" {
     }))
   })
   default = null
+
+  description = <<EOF
+    Options for the Langflow service.
+
+    domain: The domain name to use for the service; used in the listener routing rules.
+
+    env: Environment variables to set for the service.
+
+    containers: Options for the Cloud Run service.
+      cpu: The amount of CPU to allocate to the service. Defaults to 1.
+      memory: The amount of memory to allocate to the service. Defaults to 2048Mi.
+      min_instances: The minimum number of instances to run. Defaults to 0.
+      max_instances: The maximum number of instances to run. Defaults to 100.
+  EOF
 }
 
 variable "vector_dbs" {
@@ -95,6 +162,20 @@ variable "vector_dbs" {
   }))
   nullable = false
   default  = []
+
+  description = <<EOF
+    Quickly sets up vector-enabled Astra Databases for your project.
+
+    name: The name of the database to create.
+
+    regions: The regions to deploy the database to. Defaults to the first available region.
+
+    keyspace: The keyspace to use for the database. Defaults to "default_keyspace".
+
+    cloud_provider: The cloud provider to use for the database. Defaults to "gcp".
+
+    deletion_protection: Whether to enable deletion protection on the database.
+  EOF
 }
 
 # variable "chat_ui" {
