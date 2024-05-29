@@ -42,12 +42,12 @@ resource "google_cloud_run_v2_service" "this" {
     }
 
     scaling {
-      min_instance_count = try(var.config.containers.min_instances, null)
+      min_instance_count = try(var.config.containers.min_instances, 0)
       max_instance_count = try(var.config.containers.max_instances, 100)
     }
   }
 
-  ingress = "INGRESS_TRAFFIC_ALL"
+  ingress = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
 }
 
 resource "google_cloud_run_service_iam_member" "public_access" {

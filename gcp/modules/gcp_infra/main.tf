@@ -7,17 +7,20 @@ data "google_cloud_run_locations" "available" {
   project = local.project_id
 }
 
+resource "random_id" "proj_name" {
+  byte_length = 4
+}
+
 module "project-factory" {
   source  = "terraform-google-modules/project-factory/google"
   version = "~> 15.0"
 
   count = var.project_config != null ? 1 : 0
 
-  name              = try(coalesce(var.project_config.project_options.name), "enterprise-gpts")
-  random_project_id = true
-  org_id            = try(var.project_config.project_options.org_id, null)
-  billing_account   = var.project_config.project_options.billing_account
-  activate_apis     = compact(["run.googleapis.com", local.auto_cloud_dns_setup ? "dns.googleapis.com" : ""])
+  name            = try(coalesce(var.project_config.project_options.name), "enterprise-gpts-${random_id.proj_name.hex}")
+  org_id          = try(var.project_config.project_options.org_id, null)
+  billing_account = var.project_config.project_options.billing_account
+  activate_apis   = compact(["run.googleapis.com", local.auto_cloud_dns_setup ? "dns.googleapis.com" : ""])
 }
 
 resource "random_id" "url_map" {
@@ -78,7 +81,7 @@ module "lb-http" {
   backends = {
     for name, component in var.components : name => {
       description = null
-      groups      = [
+      groups = [
         { group = google_compute_region_network_endpoint_group.serverless_neg[name].id }
       ]
       enable_cdn = false
@@ -106,7 +109,7 @@ resource "google_compute_region_network_endpoint_group" "serverless_neg" {
 }
 
 locals {
-  managed_zones = coalesce(var.domain_config.managed_zones, {})
+  managed_zones        = coalesce(var.domain_config.managed_zones, {})
   auto_cloud_dns_setup = coalesce(var.domain_config.auto_cloud_dns_setup, false)
 
   # Lookup table which resolves a service to a { dns_name } or { zone_name }
@@ -139,9 +142,9 @@ locals {
     for name, config in var.components : name =>
     (local._managed_zones_lut[config.name]["dns_name"] != null
       ? google_dns_managed_zone.zones[
-      [for pair in local._dns_names_to_services : pair["dns_name"] if pair["service_name"] == name][0]
+        [for pair in local._dns_names_to_services : pair["dns_name"] if pair["service_name"] == name][0]
       ].name
-      : local._managed_zones_lut[config.name]["zone_name"])
+    : local._managed_zones_lut[config.name]["zone_name"])
     if local.auto_cloud_dns_setup
   }
 }
