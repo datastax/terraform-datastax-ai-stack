@@ -1,32 +1,32 @@
-module "enterprise-gpts-aws" {
-  source = "../aws"
-
-  domain_config = {
-    auto_route53_setup = true
-    auto_acm_cert      = true
-    hosted_zones = {
-#       default = { zone_name = "enterprise-ai-stack.com." }
-      default = { zone_id = "Z08745491XC1YEB1BPY5H" }
-    }
-  }
-
-  langflow = {
-    domain = "langflow.enterprise-ai-stack.com"
-    containers = {
-      desired_count = 1
-    }
-  }
-
-  assistants = {
-    domain = "assistants.enterprise-ai-stack.com"
-    containers = {
-      desired_count = 1
-    }
-    db = {
-      deletion_protection = false
-    }
-  }
-}
+# module "enterprise-gpts-aws" {
+#   source = "../aws"
+#
+#   domain_config = {
+#     auto_route53_setup = true
+#     auto_acm_cert      = true
+#     hosted_zones = {
+# #       default = { zone_name = "enterprise-ai-stack.com." }
+#       default = { zone_id = "Z08745491XC1YEB1BPY5H" }
+#     }
+#   }
+#
+#   langflow = {
+#     domain = "langflow.enterprise-ai-stack.com"
+#     containers = {
+#       desired_count = 1
+#     }
+#   }
+#
+#   assistants = {
+#     domain = "assistants.enterprise-ai-stack.com"
+#     containers = {
+#       desired_count = 1
+#     }
+#     db = {
+#       deletion_protection = false
+#     }
+#   }
+# }
 
 # module "enterprise-gpts-gcp" {
 #   source = "../gcp"
@@ -56,3 +56,8 @@ module "enterprise-gpts-aws" {
 #     }
 #   }
 # }
+
+module "enterprise-gpts-azure" {
+  source = "../azure"
+  langflow = {}
+}

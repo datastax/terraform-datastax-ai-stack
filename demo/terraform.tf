@@ -12,5 +12,9 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.47.0"
     }
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 3.106.0"
+    }
   }
 }
