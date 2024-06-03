@@ -14,6 +14,7 @@ variable "infrastructure" {
   type = object({
     container_app_environment_id = string
     resource_group_name          = string
+    resource_group_id            = string
     cloud_provider               = string
   })
 }

@@ -2,7 +2,7 @@ locals {
   service_name = "${var.container_info.name}-service"
 }
 
-resource "azurerm_container_app" "my_first_app" {
+resource "azurerm_container_app" "this" {
   name = local.service_name
 
   container_app_environment_id = var.infrastructure.container_app_environment_id
@@ -48,12 +48,21 @@ resource "azurerm_container_app" "my_first_app" {
     min_replicas = try(coalesce(var.config.containers.min_instances), 0)
     max_replicas = try(coalesce(var.config.containers.max_instances), 20)
   }
-}
 
-resource "null_resource" "configure_hostname" {
-  provisioner "local-exec" {}
+  lifecycle {
+    ignore_changes = [ingress.0.custom_domain]
+  }
 }
 
 output "fqdn" {
-  value = azurerm_container_app.my_first_app.latest_revision_fqdn
+  value = azurerm_container_app.this.latest_revision_fqdn
 }
+
+output "id" {
+  value = azurerm_container_app.this.id
+}
+
+output "domain_verification_id" {
+  value = azurerm_container_app.this.custom_domain_verification_id
+}
+

@@ -59,5 +59,22 @@
 
 module "enterprise-gpts-azure" {
   source = "../azure"
-  langflow = {}
+
+  resource_group_config = {
+    create_resource_group = {
+      name     = "enterprise-ai-stack"
+      location = "East US"
+    }
+  }
+
+  domain_config = {
+    auto_azure_dns_setup = true
+    dns_zones = {
+      default = { dns_zone = "az.enterprise-ai-stack.com" }
+    }
+  }
+
+  langflow = {
+    subdomain = "langflow"
+  }
 }

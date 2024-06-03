@@ -1,14 +1,37 @@
+variable "resource_group_config" {
+  type = object({
+    resource_group_name = optional(string)
+    create_resource_group = optional(object({
+      name     = string
+      location = string
+    }))
+  })
+  nullable = false
+}
+
+variable "domain_config" {
+  type = object({
+    auto_azure_dns_setup = bool
+    dns_zones = optional(map(object({
+      dns_zone = optional(string)
+      resource_group_name = optional(string)
+    })))
+  })
+  nullable = false
+}
+
 variable "assistants" {
   type = object({
-    env    = optional(map(string))
-    db     = optional(object({
-      regions             = optional(set(string))
+    subdomain = string
+    env = optional(map(string))
+    db = optional(object({
+      regions = optional(set(string))
       deletion_protection = optional(bool)
-      cloud_provider      = optional(string)
+      cloud_provider = optional(string)
     }))
     containers = optional(object({
-      cpu           = optional(number)
-      memory        = optional(number)
+      cpu = optional(number)
+      memory = optional(number)
       min_instances = optional(number)
       max_instances = optional(number)
     }))
@@ -37,10 +60,11 @@ variable "assistants" {
 
 variable "langflow" {
   type = object({
-    env        = optional(map(string))
+    subdomain = string
+    env = optional(map(string))
     containers = optional(object({
-      cpu           = optional(number)
-      memory        = optional(number)
+      cpu = optional(number)
+      memory = optional(number)
       min_instances = optional(number)
       max_instances = optional(number)
     }))
@@ -64,14 +88,14 @@ variable "langflow" {
 
 variable "vector_dbs" {
   type = list(object({
-    name                = string
-    regions             = optional(set(string))
-    keyspace            = optional(string)
-    cloud_provider      = optional(string)
+    name = string
+    regions = optional(set(string))
+    keyspace = optional(string)
+    cloud_provider = optional(string)
     deletion_protection = optional(bool)
   }))
   nullable = false
-  default  = []
+  default = []
 
   description = <<EOF
     Quickly sets up vector-enabled Astra Databases for your project.
