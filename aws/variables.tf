@@ -88,7 +88,7 @@ variable "fargate_config" {
 
 variable "assistants" {
   type = object({
-    domain = optional(string)
+    domain = string
     env    = optional(map(string))
     db     = object({
       regions             = optional(set(string))
@@ -126,7 +126,7 @@ variable "assistants" {
 
 variable "langflow" {
   type = object({
-    domain     = optional(string)
+    domain     = string
     env        = optional(map(string))
     containers = optional(object({
       cpu           = optional(number)

@@ -3,7 +3,7 @@ variable "config" {
     env        = optional(map(string))
     containers = optional(object({
       cpu           = optional(number)
-      memory        = optional(number)
+      memory        = optional(string)
       min_instances = optional(number)
       max_instances = optional(number)
     }))

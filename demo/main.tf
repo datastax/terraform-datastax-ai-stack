@@ -12,16 +12,10 @@
 #
 #   langflow = {
 #     domain = "langflow.enterprise-ai-stack.com"
-#     containers = {
-#       desired_count = 1
-#     }
 #   }
 #
 #   assistants = {
 #     domain = "assistants.enterprise-ai-stack.com"
-#     containers = {
-#       desired_count = 1
-#     }
 #     db = {
 #       deletion_protection = false
 #     }
@@ -32,7 +26,7 @@
 #   source = "../gcp"
 
 #   project_config = {
-#     project_options = {
+#     create_project = {
 #       billing_account = var.billing_account
 #     }
 #   }

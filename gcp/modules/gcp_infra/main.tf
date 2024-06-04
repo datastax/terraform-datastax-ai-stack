@@ -17,9 +17,9 @@ module "project-factory" {
 
   count = var.project_config != null ? 1 : 0
 
-  name = try(coalesce(var.project_config.project_options.name), "enterprise-gpts-${random_id.proj_name.hex}")
-  org_id = try(var.project_config.project_options.org_id, null)
-  billing_account = var.project_config.project_options.billing_account
+  name = try(coalesce(var.project_config.create_project.name), "enterprise-gpts-${random_id.proj_name.hex}")
+  org_id = try(var.project_config.create_project.org_id, null)
+  billing_account = var.project_config.create_project.billing_account
   activate_apis = compact(["run.googleapis.com", local.auto_cloud_dns_setup ? "dns.googleapis.com" : ""])
 }
 

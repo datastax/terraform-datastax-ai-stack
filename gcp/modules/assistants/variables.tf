@@ -8,8 +8,8 @@ variable "config" {
       cloud_provider      = optional(string)
     })
     containers = optional(object({
-      cpu           = optional(number)
-      memory        = optional(number)
+      cpu           = optional(string)
+      memory        = optional(string)
       min_instances = optional(number)
       max_instances = optional(number)
     }))
