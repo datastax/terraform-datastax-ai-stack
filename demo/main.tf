@@ -1,38 +1,32 @@
-module "enterprise-gpts-aws" {
-  source = "../aws"
-
-  domain_config = {
-    auto_route53_setup = true
-    auto_acm_cert      = true
-    hosted_zones = {
-#       default = { zone_name = "enterprise-ai-stack.com." }
-      default = { zone_id = "Z08745491XC1YEB1BPY5H" }
-    }
-  }
-
-  langflow = {
-    domain = "langflow.enterprise-ai-stack.com"
-    containers = {
-      desired_count = 1
-    }
-  }
-
-  assistants = {
-    domain = "assistants.enterprise-ai-stack.com"
-    containers = {
-      desired_count = 1
-    }
-    db = {
-      deletion_protection = false
-    }
-  }
-}
+# module "enterprise-gpts-aws" {
+#   source = "../aws"
+#
+#   domain_config = {
+#     auto_route53_setup = true
+#     auto_acm_cert      = true
+#     hosted_zones = {
+# #       default = { zone_name = "enterprise-ai-stack.com." }
+#       default = { zone_id = "Z08745491XC1YEB1BPY5H" }
+#     }
+#   }
+#
+#   langflow = {
+#     domain = "langflow.enterprise-ai-stack.com"
+#   }
+#
+#   assistants = {
+#     domain = "assistants.enterprise-ai-stack.com"
+#     db = {
+#       deletion_protection = false
+#     }
+#   }
+# }
 
 # module "enterprise-gpts-gcp" {
 #   source = "../gcp"
 
 #   project_config = {
-#     project_options = {
+#     create_project = {
 #       billing_account = var.billing_account
 #     }
 #   }
@@ -56,3 +50,25 @@ module "enterprise-gpts-aws" {
 #     }
 #   }
 # }
+
+module "enterprise-gpts-azure" {
+  source = "../azure"
+
+  resource_group_config = {
+    create_resource_group = {
+      name     = "enterprise-ai-stack"
+      location = "East US"
+    }
+  }
+
+  domain_config = {
+    auto_azure_dns_setup = true
+    dns_zones = {
+      default = { dns_zone = "az.enterprise-ai-stack.com" }
+    }
+  }
+
+  langflow = {
+    subdomain = "langflow"
+  }
+}

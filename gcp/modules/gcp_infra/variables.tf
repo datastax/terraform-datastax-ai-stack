@@ -1,7 +1,7 @@
 variable "project_config" {
   type = object({
     project_id      = optional(string)
-    project_options = optional(object({
+    create_project = optional(object({
       name            = optional(string)
       org_id          = optional(string)
       billing_account = string

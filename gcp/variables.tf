@@ -1,9 +1,9 @@
 variable "project_config" {
   type = object({
-    project_id      = optional(string)
-    project_options = optional(object({
-      name            = optional(string)
-      org_id          = optional(string)
+    project_id = optional(string)
+    create_project = optional(object({
+      name = optional(string)
+      org_id = optional(string)
       billing_account = string
     }))
   })
@@ -11,16 +11,16 @@ variable "project_config" {
   sensitive = true
 
   validation {
-    condition     = var.project_config.project_id != null && var.project_config.project_options == null || var.project_config.project_id == null && var.project_config.project_options != null
-    error_message = "Either project_id or project_options must be set"
+    condition     = var.project_config.project_id != null && var.project_config.create_project == null || var.project_config.project_id == null && var.project_config.create_project != null
+    error_message = "Either project_id or create_project must be set"
   }
 
   description = <<EOF
-    Sets the project to use for the deployment. If project_id is set, that project will be used. If project_options is set, a project will be created with a randomly generated ID and the given options. One of the two must be set.
+    Sets the project to use for the deployment. If project_id is set, that project will be used. If create_project is set, a project will be created with a randomly generated ID and the given options. One of the two must be set.
 
     project_id: The ID of the project to use.
 
-    project_options: Options to use when creating a new project.
+    create_project: Options to use when creating a new project.
       name: The name of the project to create. If not set, a random name will be generated.
       org_id: The ID of the organization to create the project in. 
       billing_account: The ID of the billing account to associate with the project.
@@ -45,8 +45,8 @@ variable "cloud_run_config" {
 variable "domain_config" {
   type = object({
     auto_cloud_dns_setup = bool
-    managed_zones        = optional(map(object({
-      dns_name  = optional(string)
+    managed_zones = optional(map(object({
+      dns_name = optional(string)
       zone_name = optional(string)
     })))
   })
@@ -84,15 +84,15 @@ variable "domain_config" {
 variable "assistants" {
   type = object({
     domain = string
-    env    = optional(map(string))
-    db     = optional(object({
-      regions             = optional(set(string))
+    env = optional(map(string))
+    db = optional(object({
+      regions = optional(set(string))
       deletion_protection = optional(bool)
-      cloud_provider      = optional(string)
+      cloud_provider = optional(string)
     }))
     containers = optional(object({
-      cpu           = optional(number)
-      memory        = optional(number)
+      cpu = optional(string)
+      memory = optional(string)
       min_instances = optional(number)
       max_instances = optional(number)
     }))
@@ -121,11 +121,11 @@ variable "assistants" {
 
 variable "langflow" {
   type = object({
-    domain     = string
-    env        = optional(map(string))
+    domain = string
+    env = optional(map(string))
     containers = optional(object({
-      cpu           = optional(number)
-      memory        = optional(number)
+      cpu = optional(string)
+      memory = optional(string)
       min_instances = optional(number)
       max_instances = optional(number)
     }))
@@ -149,14 +149,14 @@ variable "langflow" {
 
 variable "vector_dbs" {
   type = list(object({
-    name                = string
-    regions             = optional(set(string))
-    keyspace            = optional(string)
-    cloud_provider      = optional(string)
+    name = string
+    regions = optional(set(string))
+    keyspace = optional(string)
+    cloud_provider = optional(string)
     deletion_protection = optional(bool)
   }))
   nullable = false
-  default  = []
+  default = []
 
   description = <<EOF
     Quickly sets up vector-enabled Astra Databases for your project.
