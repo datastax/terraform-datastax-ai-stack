@@ -91,11 +91,12 @@ resource "time_sleep" "dns_propagation" {
   }
 }
 
-resource "azapi_update_resource" "custom_domains" {
+resource "azapi_resource_action" "custom_domains" {
   for_each = var.components
 
   type        = "Microsoft.App/containerApps@2023-05-01"
   resource_id = each.value.app_id
+  method      = "PATCH"
 
   body = jsonencode({
     properties = {
@@ -113,10 +114,31 @@ resource "azapi_update_resource" "custom_domains" {
   })
 }
 
+resource "azapi_resource_action" "del_custom_domains" {
+  for_each = var.components
+
+  type        = "Microsoft.App/containerApps@2023-05-01"
+  resource_id = each.value.app_id
+  method      = "PATCH"
+  when        = "destroy"
+
+  body = jsonencode({
+    properties = {
+      configuration = {
+        ingress = {
+          customDomains = []
+        }
+      }
+    }
+  })
+
+  depends_on = [azapi_resource.managed_certificates]
+}
+
 resource "azapi_resource" "managed_certificates" {
   for_each = var.components
 
-  depends_on = [time_sleep.dns_propagation, azapi_update_resource.custom_domains]
+  depends_on = [time_sleep.dns_propagation, azapi_resource_action.custom_domains]
   type      = "Microsoft.App/ManagedEnvironments/managedCertificates@2023-05-01"
   name      = "${each.key}-cert"
   parent_id = azurerm_container_app_environment.this.id
@@ -132,11 +154,12 @@ resource "azapi_resource" "managed_certificates" {
   response_export_values = ["*"]
 }
 
-resource "azapi_update_resource" "custom_domain_bindings" {
+resource "azapi_resource_action" "custom_domain_bindings" {
   for_each = var.components
 
   type        = "Microsoft.App/containerApps@2023-05-01"
   resource_id = each.value.app_id
+  method      = "PATCH"
 
   body = jsonencode({
     properties = {
