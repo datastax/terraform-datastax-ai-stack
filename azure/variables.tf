@@ -111,7 +111,7 @@ variable "langflow" {
   description = <<EOF
     Options for the Langflow service.
 
-    domain: The domain name to use for the service, if `domain_config.auto_azure_dns_setup` is true. May be blank to use the root domain. Should be null if `domain_config.auto_azure_dns_setup` is false.
+    subdomain: The domain name to use for the service, if `domain_config.auto_azure_dns_setup` is true. May be blank to use the root domain. Should be null if `domain_config.auto_azure_dns_setup` is false.
 
     env: Environment variables to set for the service.
 
