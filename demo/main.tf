@@ -62,10 +62,10 @@ module "enterprise-gpts-azure" {
   }
 
   domain_config = {
-    auto_azure_dns_setup = true
-    dns_zones = {
-      default = { dns_zone = "az.enterprise-ai-stack.com" }
-    }
+    auto_azure_dns_setup = false
+#     dns_zones = {
+#       default = { dns_zone = "az.enterprise-ai-stack.com" }
+#     }
   }
 
   langflow = {

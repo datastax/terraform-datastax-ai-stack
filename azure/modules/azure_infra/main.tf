@@ -29,11 +29,13 @@ resource "azurerm_container_app_environment" "this" {
 }
 
 locals {
+  auto_azure_dns_setup = try(var.domain_config.auto_azure_dns_setup, null) == true
   dns_zones = coalesce(var.domain_config.dns_zones, {})
 
   # LUT for DNS zones that may not include the resource_group_name
   partial_dns_zones_lut = {
     for name, _ in var.components : name => try(local.dns_zones[name], local.dns_zones["default"])
+    if local.auto_azure_dns_setup
   }
 
   # LUT for DNS zones that definitely includes the resource_group_name
@@ -42,60 +44,65 @@ locals {
       dns_zone            = local.partial_dns_zones_lut[name]["dns_zone"]
       resource_group_name = data.azurerm_dns_zone.zones[name].resource_group_name
     }
+    if local.auto_azure_dns_setup
+  }
+
+  components_if_dns_setup = {
+    for name, config in var.components : name => config if local.auto_azure_dns_setup
   }
 }
 
 data "azurerm_dns_zone" "zones" {
-  for_each = var.components
+  for_each = local.components_if_dns_setup
 
   name                = local.partial_dns_zones_lut[each.key]["dns_zone"]
   resource_group_name = local.partial_dns_zones_lut[each.key]["resource_group_name"]
 }
 
 resource "azurerm_dns_txt_record" "verification_records" {
-  for_each = var.components
+  for_each = local.components_if_dns_setup
 
-  name                = length(each.value.subdomain) > 0 ? "asuid.${each.value.subdomain}" : "asuid"
+  name                = length(each.value["subdomain"]) > 0 ? "asuid.${each.value["subdomain"]}" : "asuid"
   resource_group_name = local.dns_zones_lut[each.key]["resource_group_name"]
   zone_name           = local.dns_zones_lut[each.key]["dns_zone"]
   ttl                 = 300
 
   record {
-    value = each.value.domain_verification_id
+    value = each.value["domain_verification_id"]
   }
 }
 
 resource "azurerm_dns_cname_record" "cname_records" {
-  for_each = var.components
+  for_each = local.components_if_dns_setup
 
-  name                = each.value.subdomain
+  name                = each.value["subdomain"]
   zone_name           = local.dns_zones_lut[each.key]["dns_zone"]
   resource_group_name = local.dns_zones_lut[each.key]["resource_group_name"]
   ttl                 = 60
-  record              = each.value.app_fqdn
+  record              = each.value["app_fqdn"]
 
   depends_on = [azurerm_dns_txt_record.verification_records]
 }
 
 resource "time_sleep" "dns_propagation" {
-  for_each = var.components
+  for_each = local.components_if_dns_setup
 
   create_duration = "60s"
 
   depends_on = [azurerm_dns_txt_record.verification_records, azurerm_dns_cname_record.cname_records]
 
   triggers = {
-    url            = "${azurerm_dns_cname_record.cname_records[each.key].name}.${local.dns_zones_lut[each.key]["dns_zone"]}",
-    verificationId = each.value.domain_verification_id,
-    record         = azurerm_dns_cname_record.cname_records[each.key].record,
+    url            = "${azurerm_dns_cname_record.cname_records[each.key].name}.${local.dns_zones_lut[each.key]["dns_zone"]}"
+    verificationId = each.value["domain_verification_id"]
+    record         = azurerm_dns_cname_record.cname_records[each.key].record
   }
 }
 
 resource "azapi_resource_action" "custom_domains" {
-  for_each = var.components
+  for_each = local.components_if_dns_setup
 
   type        = "Microsoft.App/containerApps@2023-05-01"
-  resource_id = each.value.app_id
+  resource_id = each.value["app_id"]
   method      = "PATCH"
 
   body = jsonencode({
@@ -115,10 +122,10 @@ resource "azapi_resource_action" "custom_domains" {
 }
 
 resource "azapi_resource_action" "del_custom_domains" {
-  for_each = var.components
+  for_each = local.components_if_dns_setup
 
   type        = "Microsoft.App/containerApps@2023-05-01"
-  resource_id = each.value.app_id
+  resource_id = each.value["app_id"]
   method      = "PATCH"
   when        = "destroy"
 
@@ -136,7 +143,7 @@ resource "azapi_resource_action" "del_custom_domains" {
 }
 
 resource "azapi_resource" "managed_certificates" {
-  for_each = var.components
+  for_each = local.components_if_dns_setup
 
   depends_on = [time_sleep.dns_propagation, azapi_resource_action.custom_domains]
   type      = "Microsoft.App/ManagedEnvironments/managedCertificates@2023-05-01"
@@ -155,10 +162,10 @@ resource "azapi_resource" "managed_certificates" {
 }
 
 resource "azapi_resource_action" "custom_domain_bindings" {
-  for_each = var.components
+  for_each = local.components_if_dns_setup
 
   type        = "Microsoft.App/containerApps@2023-05-01"
-  resource_id = each.value.app_id
+  resource_id = each.value["app_id"]
   method      = "PATCH"
 
   body = jsonencode({
