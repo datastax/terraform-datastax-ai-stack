@@ -62,7 +62,7 @@ data "azurerm_dns_zone" "zones" {
 resource "azurerm_dns_txt_record" "verification_records" {
   for_each = local.components_if_dns_setup
 
-  name                = length(each.value["subdomain"]) > 0 ? "asuid.${each.value["subdomain"]}" : "asuid"
+  name                = "asuid.${each.value["subdomain"]}"
   resource_group_name = local.dns_zones_lut[each.key]["resource_group_name"]
   zone_name           = local.dns_zones_lut[each.key]["dns_zone"]
   ttl                 = 300

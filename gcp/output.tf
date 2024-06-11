@@ -18,3 +18,7 @@ output "service_uris" {
     } : key => uri[0] if length(uri) > 0 
   }
 }
+
+output "db_ids" {
+  value = zipmap(concat(module.assistants[*].db_name, module.vector_dbs[*].db_name), concat(module.assistants[*].db_id, module.vector_dbs[*].db_id))
+}

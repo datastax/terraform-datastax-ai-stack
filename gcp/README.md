@@ -16,13 +16,19 @@ You may want a custom domain to attach to the Langflow/Assistants services, but 
 ## Basic usage
 
 ```hcl
-module "enterprise-gpts-aws" {
-  source = "../aws"
+module "enterprise-gpts-gcp" {
+  source = "../gcp"
+
+  project_config = {
+    create_project = {
+      billing_account = var.billing_account
+    }
+  }
 
   domain_config = {
-    auto_route53_setup = true
-    hosted_zones = {
-      default = { zone_name = var.domain }
+    auto_cloud_dns_setup = true
+    managed_zones = {
+      default = { dns_name = "${var.domain}." }
     }
   }
 
@@ -34,8 +40,8 @@ module "enterprise-gpts-aws" {
   }
 
   assistants = {
-    domain = "assistants.${var.domain}"
     db = {
+      regions             = ["us-east1"]
       deletion_protection = false
     }
   }
@@ -95,7 +101,7 @@ Options regarding the langflow deployment. If not set, langflow is not created. 
 | Field      | Description | Type |
 | ---------- | ----------- | ---- |
 | domain     | The domain name to use for the service; used in the URL map. | `optional(string)` |
-| env        |  Environment variables to set for the service. | `optional(map(string))` |
+| env        | Environment variables to set for the service. | `optional(map(string))` |
 | containers | Options for the ECS service.<br>- cpu: The amount of CPU to allocate to the service. Defaults to "1".<br>- memory: The amount of memory to allocate to the service. Defaults to "2048Mi".<br>- min_instances: The minimum number of instances to run. Defaults to 0.<br>- max_instances: The maximum number of instances to run. Defaults to 100. | <pre>optional(object({<br>  cpu           = optional(string)<br>  memory        = optional(string)<br>  min_instances = optional(number)<br>  max_instances = optional(number)<br>}))</pre> |
 
 ### `assistants` (optional)
@@ -105,9 +111,21 @@ Options regarding the astra-assistants-api deployment. If not set, assistants is
 | Field      | Description | Type |
 | ---------- | ----------- | ---- |
 | domain     | The domain name to use for the service; used in the URL map. | `optional(string)` |
-| env        |  Environment variables to set for the service. | `optional(map(string))` |
+| env        | Environment variables to set for the service. | `optional(map(string))` |
 | db         | Options for the database Astra Assistants uses.<br>- regions: The regions to deploy the database to. Defaults to the first available region.<br>- deletion_protection: Whether to enable deletion protection on the database.<br>- cloud_provider: The cloud provider to use for the database. Defaults to "gcp". | <pre>optional(object({<br>  regions             = optional(set(string))<br>  deletion_protection = optional(bool)<br>  cloud_provider      = optional(string)<br>}))</pre> |
 | containers | Options for the ECS service.<br>- cpu: The amount of CPU to allocate to the service. Defaults to "1".<br>- memory: The amount of memory to allocate to the service. Defaults to "2048Mi".<br>- min_instances: The minimum number of instances to run. Defaults to 0.<br>- max_instances: The maximum number of instances to run. Defaults to 100. | <pre>optional(object({<br>  cpu           = optional(string)<br>  memory        = optional(string)<br>  min_instances = optional(number)<br>  max_instances = optional(number)<br>}))</pre> |
+
+### `vector_dbs` optional
+
+A list of configuration for each vector-enabled DB you may want to create/deploy. No custom domain is required to use this.
+
+| Field                | Description                                                                    | Type                    |
+| -------------------- | ------------------------------------------------------------------------------ | ----------------------- |
+| name                 | The name of the database to create.                                            | `string`                |
+| regions              | The regions to deploy the database to. Defaults to the first available region. | `optional(set(string))` |
+| keyspace             | The keyspace to use for the database. Defaults to "default_keyspace".          | `optional(string)`      |
+| cloud_provider       | The cloud provider to use for the database. Defaults to "gcp".                 | `optional(string)`      |
+| deletion_protection  | Whether to enable deletion protection on the database.                         | `optional(bool)`        |
 
 ## Outputs
 

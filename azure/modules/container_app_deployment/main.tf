@@ -65,4 +65,3 @@ output "id" {
 output "domain_verification_id" {
   value = azurerm_container_app.this.custom_domain_verification_id
 }
-

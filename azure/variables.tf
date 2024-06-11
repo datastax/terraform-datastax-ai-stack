@@ -30,7 +30,7 @@ variable "domain_config" {
   type = object({
     auto_azure_dns_setup = bool
     dns_zones = optional(map(object({
-      dns_zone = string
+      dns_zone            = string
       resource_group_name = optional(string)
     })))
   })
@@ -60,15 +60,15 @@ variable "domain_config" {
 variable "assistants" {
   type = object({
     subdomain = optional(string)
-    env = optional(map(string))
+    env       = optional(map(string))
     db = optional(object({
-      regions = optional(set(string))
+      regions             = optional(set(string))
       deletion_protection = optional(bool)
-      cloud_provider = optional(string)
+      cloud_provider      = optional(string)
     }))
     containers = optional(object({
-      cpu = optional(number)
-      memory = optional(string)
+      cpu           = optional(number)
+      memory        = optional(string)
       min_instances = optional(number)
       max_instances = optional(number)
     }))
@@ -78,7 +78,7 @@ variable "assistants" {
   description = <<EOF
     Options for the Astra Assistant API service.
 
-    subdomain: The domain name to use for the service, if `domain_config.auto_azure_dns_setup` is true. May be blank to use the root domain. Should be null if `domain_config.auto_azure_dns_setup` is false.
+    subdomain: The subdomain to use for the service, if `domain_config.auto_azure_dns_setup` is true. Should be null if `domain_config.auto_azure_dns_setup` is false.
 
     env: Environment variables to set for the service.
 
@@ -98,10 +98,10 @@ variable "assistants" {
 variable "langflow" {
   type = object({
     subdomain = optional(string)
-    env = optional(map(string))
+    env       = optional(map(string))
     containers = optional(object({
-      cpu = optional(number)
-      memory = optional(string)
+      cpu           = optional(number)
+      memory        = optional(string)
       min_instances = optional(number)
       max_instances = optional(number)
     }))
@@ -111,7 +111,7 @@ variable "langflow" {
   description = <<EOF
     Options for the Langflow service.
 
-    subdomain: The domain name to use for the service, if `domain_config.auto_azure_dns_setup` is true. May be blank to use the root domain. Should be null if `domain_config.auto_azure_dns_setup` is false.
+    subdomain: The subdomain to use for the service, if `domain_config.auto_azure_dns_setup` is true. Should be null if `domain_config.auto_azure_dns_setup` is false.
 
     env: Environment variables to set for the service.
 
@@ -125,14 +125,14 @@ variable "langflow" {
 
 variable "vector_dbs" {
   type = list(object({
-    name = string
-    regions = optional(set(string))
-    keyspace = optional(string)
-    cloud_provider = optional(string)
+    name                = string
+    regions             = optional(set(string))
+    keyspace            = optional(string)
+    cloud_provider      = optional(string)
     deletion_protection = optional(bool)
   }))
   nullable = false
-  default = []
+  default  = []
 
   description = <<EOF
     Quickly sets up vector-enabled Astra Databases for your project.

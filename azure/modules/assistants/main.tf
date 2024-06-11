@@ -38,6 +38,14 @@ output "domain_verification_id" {
   value = module.container_app_deployment.domain_verification_id
 }
 
+output "db_id" {
+  value = module.assistants_api_db.db_id
+}
+
+output "db_name" {
+  value = module.assistants_api_db.db_name
+}
+
 module "container_app_deployment" {
   source         = "../container_app_deployment"
   container_info = local.container_info
