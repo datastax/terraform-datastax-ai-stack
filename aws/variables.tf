@@ -2,18 +2,12 @@ variable "domain_config" {
   type = object({
     auto_route53_setup = bool
     hosted_zones       = optional(map(object({
-      zone_name = optional(string)
       zone_id   = optional(string)
+      zone_name = optional(string)
     })))
-    auto_acm_cert = optional(bool)
     acm_cert_arn  = optional(string)
   })
   nullable = false
-
-  validation {
-    condition     = !(var.domain_config.auto_acm_cert == true && var.domain_config.auto_route53_setup != true)
-    error_message = "auto_acm_cert requires auto_route53_setup to be true"
-  }
 
   validation {
     condition     = !(var.domain_config.auto_route53_setup == true && length(var.domain_config.hosted_zones) == 0)
@@ -21,13 +15,8 @@ variable "domain_config" {
   }
 
   validation {
-    condition     = !(var.domain_config.auto_acm_cert == true && var.domain_config.acm_cert_arn != null)
-    error_message = "cannot provide a cert if auto_acm_cert is true"
-  }
-
-  validation {
-    condition     = !(var.domain_config.auto_acm_cert != true && var.domain_config.acm_cert_arn == null)
-    error_message = "must provide an acm_cert_arn if auto_acm_cert isn't true"
+    condition     = !(var.domain_config.auto_route53_setup == false && var.domain_config.acm_cert_arn == null)
+    error_message = "must provide an acm_cert_arn if auto_route53_setup isn't true"
   }
 
   description = <<EOF
@@ -35,13 +24,11 @@ variable "domain_config" {
 
     auto_route53_setup: If true, Route53 will be automatically set up. hosted_zones must be set if this is true. Otherwise, you must set each domain to the output load_balancer_ip w/ an A record.
 
-    hosted_zones: A map of components (or a default value) to their hosted_zones zones. The valid keys are {default, langflow, assistants}. For each, either zone_name or zone_id must be set.
-      zone_name: The DNS name (e.g. "example.com.") of the existing hosted zone to use.
+    hosted_zones: A map of components (or a default value) to their hosted_zones zones. The valid keys are {default, langflow, assistants}. For each, either zone_id or zone_name must be set.
+      zone_name: The name of the existing hosted zone to use. Must not be a private zone.
       zone_id: The ID of the existing hosted zone to use.
 
-    auto_acm_cert: If true, an ACM certificate will be automatically set up. Only available if auto_route53_setup is true. Otherwise, you must provide a certificate ARN.
-
-    acm_cert_arn: The ARN of the ACM certificate to use. Required if auto_acm_cert is false.
+    acm_cert_arn: The ARN of the ACM certificate to use. Required if auto_route53_setup is false. If auto_route53_setup is true, you may choose to set this; otherwise, one is manually created.
   EOF
 }
 
@@ -65,14 +52,14 @@ variable "infrastructure" {
 }
 
 variable "fargate_config" {
-  type = object({
+  type = optional(object({
     capacity_provider_weights = optional(object({
       default_base   = number
       default_weight = number
-      spot_weight    = number
       spot_base      = number
+      spot_weight    = number
     }))
-  })
+  }))
   default = null
 
   description = <<EOF
@@ -90,11 +77,11 @@ variable "assistants" {
   type = object({
     domain = string
     env    = optional(map(string))
-    db     = object({
+    db     = optional(object({
       regions             = optional(set(string))
       deletion_protection = optional(bool)
       cloud_provider      = optional(string)
-    })
+    }))
     containers = optional(object({
       cpu           = optional(number)
       memory        = optional(number)
@@ -116,10 +103,10 @@ variable "assistants" {
       deletion_protection: Whether to enable deletion protection on the database.
       cloud_provider: The cloud provider to use for the database. Defaults to "gcp".
 
-    containers: Options for the Cloud Run service.
-      cpu: The amount of CPU to allocate to the service. Defaults to 1.
-      memory: The amount of memory to allocate to the service. Defaults to 2048Mi.
-      min_instances: The minimum number of instances to run. Defaults to 0.
+    containers: Options for the ECS service.
+      cpu: The amount of CPU to allocate to the service. Defaults to 1024.
+      memory: The amount of memory to allocate to the service. Defaults to 2048 (Mi).
+      min_instances: The minimum number of instances to run. Defaults to 1.
       max_instances: The maximum number of instances to run. Defaults to 100.
   EOF
 }
@@ -144,10 +131,10 @@ variable "langflow" {
 
     env: Environment variables to set for the service.
 
-    containers: Options for the Cloud Run service.
-      cpu: The amount of CPU to allocate to the service. Defaults to 1.
-      memory: The amount of memory to allocate to the service. Defaults to 2048Mi.
-      min_instances: The minimum number of instances to run. Defaults to 0.
+    containers: Options for the ECS service.
+      cpu: The amount of CPU to allocate to the service. Defaults to 1024.
+      memory: The amount of memory to allocate to the service. Defaults to 2048 (Mi).
+      min_instances: The minimum number of instances to run. Defaults to 1.
       max_instances: The maximum number of instances to run. Defaults to 100.
   EOF
 }

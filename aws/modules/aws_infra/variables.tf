@@ -2,10 +2,9 @@ variable "domain_config" {
   type = object({
     auto_route53_setup = optional(bool)
     hosted_zones       = optional(map(object({
-      zone_name = optional(string)
       zone_id   = optional(string)
+      zone_name = optional(string)
     })))
-    auto_acm_cert = optional(bool)
     acm_cert_arn  = optional(string)
   })
 }
@@ -21,14 +20,14 @@ variable "alb_config" {
 }
 
 variable "fargate_config" {
-  type = object({
+  type = optional(object({
     capacity_provider_weights = optional(object({
       default_base   = number
       default_weight = number
-      spot_weight    = number
       spot_base      = number
+      spot_weight    = number
     }))
-  })
+  }))
   nullable = true
 }
 
