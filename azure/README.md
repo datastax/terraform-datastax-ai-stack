@@ -122,3 +122,13 @@ The fully-qualified domain name of the created langflow service (if it exists)
 ### `assistants_fqdn` (`string`)
 
 The fully-qualified domain name of the created astra-assistants-api service (if it exists)
+
+### `db_ids` (`map(string)`)
+
+A map of DB IDs => DB names for all of the dbs created (from the `assistants` module and the `vector_dbs` module), e.g:
+
+```hcl
+"db_ids" = {
+  "12345678-abcd-efgh-1234-abcd1234efgh" = "assistant_api_db"
+}
+```
