@@ -30,6 +30,14 @@ output "target_id" {
   value = module.ecs_deployment.target_id
 }
 
+output "db_id" {
+  value = module.assistants_api_db.db_id
+}
+
+output "db_name" {
+  value = module.assistants_api_db.db_name
+}
+
 module "ecs_deployment" {
   source           = "../ecs_deployment"
   infrastructure   = var.infrastructure

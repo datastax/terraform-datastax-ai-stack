@@ -47,7 +47,7 @@ resource "google_cloud_run_v2_service" "this" {
     }
   }
 
-  ingress = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
+  ingress = var.config.domain != null ? "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER" : "INGRESS_TRAFFIC_ALL"
 }
 
 resource "google_cloud_run_service_iam_member" "public_access" {
@@ -60,4 +60,8 @@ resource "google_cloud_run_service_iam_member" "public_access" {
 
 output "service_name" {
   value = local.service_name
+}
+
+output "service_uri" {
+  value = google_cloud_run_v2_service.this.uri
 }

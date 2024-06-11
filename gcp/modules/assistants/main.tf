@@ -30,6 +30,18 @@ output "service_name" {
   value = module.cloud_run_deployment.service_name
 }
 
+output "service_uri" {
+  value = module.cloud_run_deployment.service_uri
+}
+
+output "db_id" {
+  value = module.assistants_api_db.db_id
+}
+
+output "db_name" {
+  value = module.assistants_api_db.db_name
+}
+
 module "cloud_run_deployment" {
   source         = "../cloud_run_deployment"
   container_info = local.container_info

@@ -1,24 +1,24 @@
-module "enterprise-gpts-aws" {
-  source = "../aws"
+# module "enterprise-gpts-aws" {
+#   source = "../aws"
 
-  domain_config = {
-    auto_route53_setup = true
-    hosted_zones = {
-      default = { zone_name = "enterprise-ai-stack.com" }
-    }
-  }
+#   domain_config = {
+#     auto_route53_setup = true
+#     hosted_zones = {
+#       default = { zone_name = "enterprise-ai-stack.com" }
+#     }
+#   }
 
-  langflow = {
-    domain = "langflow.enterprise-ai-stack.com"
-  }
+#   langflow = {
+#     domain = "langflow.enterprise-ai-stack.com"
+#   }
 
-  assistants = {
-    domain = "assistants.enterprise-ai-stack.com"
-    db = {
-      deletion_protection = false
-    }
-  }
-}
+#   assistants = {
+#     domain = "assistants.enterprise-ai-stack.com"
+#     db = {
+#       deletion_protection = false
+#     }
+#   }
+# }
 
 # module "enterprise-gpts-gcp" {
 #   source = "../gcp"
@@ -41,7 +41,7 @@ module "enterprise-gpts-aws" {
 #   }
 
 #   assistants = {
-#     domain = "assistants.gcp.enterprise-ai-stack.com"
+#     # domain = "assistants.gcp.enterprise-ai-stack.com"
 #     db = {
 #       regions             = ["us-east1"]
 #       deletion_protection = false
@@ -49,24 +49,31 @@ module "enterprise-gpts-aws" {
 #   }
 # }
 
-# module "enterprise-gpts-azure" {
-#   source = "../azure"
+module "enterprise-gpts-azure" {
+  source = "../azure"
 
-#   resource_group_config = {
-#     create_resource_group = {
-#       name     = "enterprise-ai-stack"
-#       location = "East US"
-#     }
-#   }
+  resource_group_config = {
+    create_resource_group = {
+      name     = "enterprise-ai-stack"
+      location = "East US"
+    }
+  }
 
-#   domain_config = {
-#     auto_azure_dns_setup = false
-# #     dns_zones = {
-# #       default = { dns_zone = "az.enterprise-ai-stack.com" }
-# #     }
-#   }
+  domain_config = {
+    auto_azure_dns_setup = true
+    dns_zones = {
+      default = { dns_zone = "az.enterprise-ai-stack.com" }
+    }
+  }
 
-#   langflow = {
-#     subdomain = "langflow"
-#   }
-# }
+  langflow = {
+    subdomain = "langflow"
+  }
+
+  assistants = {
+    subdomain = "assistants"
+    db = {
+      deletion_protection = false
+    }
+  }
+}

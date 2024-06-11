@@ -15,11 +15,19 @@ locals {
   regions = try(coalesce(var.config.regions), [local.filtered_regions[0]])
 }
 
-resource "astra_database" "astra_vector_dbs" {
+resource "astra_database" "astra_vector_db" {
   cloud_provider      = local.cloud_provider
   keyspace            = var.config.keyspace
   name                = var.config.name
   deletion_protection = var.config.deletion_protection
   regions             = local.regions
   db_type             = "vector"
+}
+
+output "db_id" {
+  value = astra_database.astra_vector_db.id
+}
+
+output "db_name" {
+  value = var.config.name
 }
