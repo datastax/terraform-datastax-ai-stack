@@ -2,8 +2,8 @@ variable "project_config" {
   type = object({
     project_id = optional(string)
     create_project = optional(object({
-      name = optional(string)
-      org_id = optional(string)
+      name            = optional(string)
+      org_id          = optional(string)
       billing_account = string
     }))
   })
@@ -46,7 +46,7 @@ variable "domain_config" {
   type = object({
     auto_cloud_dns_setup = bool
     managed_zones = optional(map(object({
-      dns_name = optional(string)
+      dns_name  = optional(string)
       zone_name = optional(string)
     })))
   })
@@ -83,16 +83,16 @@ variable "domain_config" {
 
 variable "assistants" {
   type = object({
-    domain = string
-    env = optional(map(string))
+    domain = optional(string)
+    env    = optional(map(string))
     db = optional(object({
-      regions = optional(set(string))
+      regions             = optional(set(string))
       deletion_protection = optional(bool)
-      cloud_provider = optional(string)
+      cloud_provider      = optional(string)
     }))
     containers = optional(object({
-      cpu = optional(string)
-      memory = optional(string)
+      cpu           = optional(string)
+      memory        = optional(string)
       min_instances = optional(number)
       max_instances = optional(number)
     }))
@@ -121,11 +121,11 @@ variable "assistants" {
 
 variable "langflow" {
   type = object({
-    domain = string
-    env = optional(map(string))
+    domain = optional(string)
+    env    = optional(map(string))
     containers = optional(object({
-      cpu = optional(string)
-      memory = optional(string)
+      cpu           = optional(string)
+      memory        = optional(string)
       min_instances = optional(number)
       max_instances = optional(number)
     }))
@@ -149,14 +149,14 @@ variable "langflow" {
 
 variable "vector_dbs" {
   type = list(object({
-    name = string
-    regions = optional(set(string))
-    keyspace = optional(string)
-    cloud_provider = optional(string)
+    name                = string
+    regions             = optional(set(string))
+    keyspace            = optional(string)
+    cloud_provider      = optional(string)
     deletion_protection = optional(bool)
   }))
   nullable = false
-  default = []
+  default  = []
 
   description = <<EOF
     Quickly sets up vector-enabled Astra Databases for your project.

@@ -28,7 +28,7 @@ variable "domain_config" {
 variable "components" {
   type = map(object({
     name         = string
-    domain       = string
+    domain       = optional(string)
     service_name = string
   }))
 }

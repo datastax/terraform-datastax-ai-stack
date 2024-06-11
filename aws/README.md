@@ -1,6 +1,6 @@
 # Datastax AI stack (AWS)
 
-Terraform module which helps you quickly deploy an opinionated AI/RAG stack, provided by Datastax.
+Terraform module which helps you quickly deploy an opinionated AI/RAG stack to AWS, provided by Datastax.
 
 It offers multiple easy-to-deploy components, including:
  - Langflow
@@ -60,6 +60,17 @@ module "enterprise-gpts-aws" {
 
 ## Inputs
 
+### `infrastructure` (optional)
+
+Options related to the VPC/infrastructure. If not provided, a new VPC will be created for you.
+
+| Field           | Description                                                  | Type           |
+| --------------- | ------------------------------------------------------------ | -------------- |
+| vpc_id          | The ID of the VPC to create the ALB and other components in. | `string`       | 
+| public_subnets  | A list of public subnet IDs to create the ALB in.            | `list(string)` | 
+| private_subnets | A list of private subnet IDs to create the ECS instances in. | `list(string)` | 
+| security_groups | A list of security group IDs to attach to the ALB.           | `list(string)` | 
+
 ### `domain_config` (required)
 
 Options related to DNS/HTTPS setup. If you create a hosted zone on Route53, this module is able to handle the most of this for you.
@@ -72,17 +83,6 @@ Regardless of whether `auto_route53_setup` is true or not though, a custom domai
 | hosted_zones       | A map of components (or a default value) to their hosted zones. The valid keys are {default, langflow, assistants}. For each, either `zone_id` or `zone_name` must be set. | <pre>optional(map(object({<br>  zone_id = optional(string)<br>  zone_name = optional(string)<br>})))</pre> |
 | acm_cert_arn       | The ARN of the ACM certificate to use. Required if auto_route53_setup is `false`. If auto_route53_setup is `true`, you may choose to set this; otherwise, one is manually created. | `optional(boolean)` |
 
-### `infrastructure` (optional)
-
-Options related to the VPC/infrastructure. If not provided, a new VPC will be created for you.
-
-| Field           | Description                                                  | Type           |
-| --------------- | ------------------------------------------------------------ | -------------- |
-| vpc_id          | The ID of the VPC to create the ALB and other components in. | `string`       | 
-| public_subnets  | A list of public subnet IDs to create the ALB in.            | `list(string)` | 
-| private_subnets | A list of private subnet IDs to create the ECS instances in. | `list(string)` | 
-| security_groups | A list of security group IDs to attach to the ALB.           | `list(string)` | 
-
 ### `fargate_config` (optional)
 
 Options related to the deployment of the ECS on Fargate instances.
@@ -93,7 +93,7 @@ Options related to the deployment of the ECS on Fargate instances.
 
 ### `langflow` (optional)
 
-Options regarding the langflow deployment. Must have a custom domain at hand to use this. If not set, langflow is not created.
+Options regarding the langflow deployment. If not set, langflow is not created. Must have a custom domain at hand to use this.
 
 | Field      | Description | Type |
 | ---------- | ----------- | ---- |
@@ -103,7 +103,7 @@ Options regarding the langflow deployment. Must have a custom domain at hand to 
 
 ### `assistants` (optional)
 
-Options regarding the astra-assistants-api deployment. Must have a custom domain at hand to use this. If not set, assistants is not created.
+Options regarding the astra-assistants-api deployment. If not set, assistants is not created. Must have a custom domain at hand to use this.
 
 | Field      | Description | Type |
 | ---------- | ----------- | ---- |

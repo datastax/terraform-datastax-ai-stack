@@ -159,7 +159,7 @@ resource "google_dns_managed_zone" "zones" {
 resource "google_dns_record_set" "a_records" {
   for_each = {
     for name, config in var.components : name => config
-    if local.auto_cloud_dns_setup
+    if local.auto_cloud_dns_setup && config.domain != null
   }
 
   name         = "${each.value.domain}."

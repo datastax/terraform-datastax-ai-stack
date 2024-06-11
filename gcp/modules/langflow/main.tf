@@ -16,6 +16,10 @@ output "service_name" {
   value = module.cloud_run_deployment.service_name
 }
 
+output "service_uri" {
+  value = module.cloud_run_deployment.service_uri
+}
+
 module "cloud_run_deployment" {
   source         = "../cloud_run_deployment"
   container_info = local.container_info
