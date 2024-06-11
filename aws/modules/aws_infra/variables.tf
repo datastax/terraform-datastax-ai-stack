@@ -20,14 +20,14 @@ variable "alb_config" {
 }
 
 variable "fargate_config" {
-  type = optional(object({
+  type = object({
     capacity_provider_weights = optional(object({
       default_base   = number
       default_weight = number
       spot_base      = number
       spot_weight    = number
     }))
-  }))
+  })
   nullable = true
 }
 

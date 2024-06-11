@@ -5,7 +5,7 @@ variable "domain_config" {
       zone_id   = optional(string)
       zone_name = optional(string)
     })))
-    acm_cert_arn  = optional(string)
+    acm_cert_arn = optional(string)
   })
   nullable = false
 
@@ -52,14 +52,14 @@ variable "infrastructure" {
 }
 
 variable "fargate_config" {
-  type = optional(object({
+  type = object({
     capacity_provider_weights = optional(object({
       default_base   = number
       default_weight = number
       spot_base      = number
       spot_weight    = number
     }))
-  }))
+  })
   default = null
 
   description = <<EOF
