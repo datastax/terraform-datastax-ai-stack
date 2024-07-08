@@ -1,6 +1,6 @@
 locals {
   project_id = coalesce(var.project_config.project_id, module.project-factory[0].project_id)
-  location = try(coalesce(var.cloud_run_config.location), data.google_cloud_run_locations.available.locations[0])
+  location   = try(coalesce(var.cloud_run_config.location), data.google_cloud_run_locations.available.locations[0])
 }
 
 data "google_cloud_run_locations" "available" {
@@ -17,10 +17,10 @@ module "project-factory" {
 
   count = var.project_config != null ? 1 : 0
 
-  name = try(coalesce(var.project_config.create_project.name), "enterprise-gpts-${random_id.proj_name.hex}")
-  org_id = try(var.project_config.create_project.org_id, null)
+  name            = try(coalesce(var.project_config.create_project.name), "enterprise-gpts-${random_id.proj_name.hex}")
+  org_id          = try(var.project_config.create_project.org_id, null)
   billing_account = var.project_config.create_project.billing_account
-  activate_apis = compact(["run.googleapis.com", local.auto_cloud_dns_setup ? "dns.googleapis.com" : ""])
+  activate_apis   = compact(["run.googleapis.com", local.auto_cloud_dns_setup ? "dns.googleapis.com" : ""])
 }
 
 resource "random_id" "url_map" {
@@ -41,7 +41,7 @@ resource "google_compute_url_map" "url_map" {
     }
 
     content {
-      hosts = [host_rule.value]
+      hosts        = [host_rule.value]
       path_matcher = host_rule.key
     }
   }
@@ -71,12 +71,12 @@ module "lb-http" {
   name    = "enterprise-gpts-lb-${random_id.url_map.hex}"
   project = local.project_id
 
-  ssl                       = true
+  ssl                             = true
   managed_ssl_certificate_domains = compact(values(var.components)[*].domain)
-  random_certificate_suffix = true
-  https_redirect            = true
-  url_map                   = google_compute_url_map.url_map.self_link
-  create_url_map            = false
+  random_certificate_suffix       = true
+  https_redirect                  = true
+  url_map                         = google_compute_url_map.url_map.self_link
+  create_url_map                  = false
 
   backends = {
     for name, component in var.components : name => {
@@ -109,7 +109,7 @@ resource "google_compute_region_network_endpoint_group" "serverless_neg" {
 }
 
 locals {
-  managed_zones = coalesce(var.domain_config.managed_zones, {})
+  managed_zones        = coalesce(var.domain_config.managed_zones, {})
   auto_cloud_dns_setup = coalesce(var.domain_config.auto_cloud_dns_setup, false)
 
   # Lookup table which resolves a service to a { dns_name } or { zone_name }
@@ -142,9 +142,9 @@ locals {
     for name, config in var.components : name =>
     (local._managed_zones_lut[config.name]["dns_name"] != null
       ? google_dns_managed_zone.zones[
-      [for pair in local._dns_names_with_services : pair["dns_name"] if pair["service_name"] == name][0]
+        [for pair in local._dns_names_with_services : pair["dns_name"] if pair["service_name"] == name][0]
       ].name
-      : local._managed_zones_lut[config.name]["zone_name"])
+    : local._managed_zones_lut[config.name]["zone_name"])
     if local.auto_cloud_dns_setup
   }
 }
@@ -166,7 +166,7 @@ resource "google_dns_record_set" "a_records" {
   managed_zone = local.managed_zones_lut[each.key]
   type         = "A"
   ttl          = 300
-  rrdatas = [module.lb-http.external_ip]
+  rrdatas      = [module.lb-http.external_ip]
   project      = local.project_id
 }
 

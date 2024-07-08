@@ -1,7 +1,7 @@
 variable "domain_config" {
   type = object({
     auto_route53_setup = bool
-    hosted_zones       = optional(map(object({
+    hosted_zones = optional(map(object({
       zone_id   = optional(string)
       zone_name = optional(string)
     })))
@@ -75,9 +75,10 @@ variable "fargate_config" {
 
 variable "assistants" {
   type = object({
-    domain = string
-    env    = optional(map(string))
-    db     = optional(object({
+    version = optional(string)
+    domain  = string
+    env     = optional(map(string))
+    db = optional(object({
       regions             = optional(set(string))
       deletion_protection = optional(bool)
       cloud_provider      = optional(string)
@@ -93,6 +94,8 @@ variable "assistants" {
 
   description = <<EOF
     Options for the Astra Assistant API service.
+
+    version: The image version to use for the deployment; defaults to "latest".
 
     domain: The domain name to use for the service; used in the listener routing rules.
 
@@ -113,8 +116,9 @@ variable "assistants" {
 
 variable "langflow" {
   type = object({
-    domain     = string
-    env        = optional(map(string))
+    version = optional(string)
+    domain  = string
+    env     = optional(map(string))
     containers = optional(object({
       cpu           = optional(number)
       memory        = optional(number)
@@ -126,6 +130,8 @@ variable "langflow" {
 
   description = <<EOF
     Options for the Langflow service.
+
+    version: The image version to use for the deployment; defaults to "latest".
 
     domain: The domain name to use for the service; used in the listener routing rules.
 

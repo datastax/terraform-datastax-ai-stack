@@ -1,6 +1,6 @@
 variable "config" {
   type = object({
-    env        = optional(map(string))
+    env = optional(map(string))
     containers = optional(object({
       cpu           = optional(number)
       memory        = optional(string)
@@ -12,6 +12,7 @@ variable "config" {
 
 variable "infrastructure" {
   type = object({
+    version                      = optional(string)
     container_app_environment_id = string
     resource_group_name          = string
     resource_group_id            = string

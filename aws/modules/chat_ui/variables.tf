@@ -4,7 +4,7 @@ variable "chat_ui" {
     task_model    = any
     models        = any
     mongodb_url   = string
-    api_keys      = object({
+    api_keys = object({
       hf_token             = optional(string)
       openai_api_key       = optional(string)
       perplexityai_api_key = optional(string)
@@ -24,7 +24,7 @@ variable "chat_ui" {
 variable "cloud_provider" {
   type = object({
     name = string
-    ssh  = optional(object({
+    ssh = optional(object({
       aws_public_key_name = optional(string)
       gcp_user            = optional(string)
       gcp_pub_key         = optional(string)

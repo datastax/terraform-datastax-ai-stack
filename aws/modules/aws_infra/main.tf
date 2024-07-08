@@ -95,7 +95,7 @@ module "alb" {
       port            = 443
       protocol        = "HTTPS"
       certificate_arn = local.certificate_arn
-      rules           = {
+      rules = {
         for config in var.components : config.name => {
           actions    = [{ type = "forward", target_group_key = config.name }]
           conditions = [{ host_header = { values = [config.domain] } }]
@@ -182,8 +182,8 @@ data "aws_route53_zone" "zones" {
     if local.auto_route53_setup
   }
 
-  zone_id   = local.hosted_zones_lut[each.value.name]["zone_id"]
-  name      = local.hosted_zones_lut[each.value.name]["zone_name"]
+  zone_id = local.hosted_zones_lut[each.value.name]["zone_id"]
+  name    = local.hosted_zones_lut[each.value.name]["zone_name"]
 
   private_zone = local.hosted_zones_lut[each.value.name]["zone_name"] != null ? false : null
 }

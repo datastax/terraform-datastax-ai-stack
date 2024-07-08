@@ -100,6 +100,7 @@ Options regarding the langflow deployment. If not set, langflow is not created. 
 
 | Field      | Description | Type |
 | ---------- | ----------- | ---- |
+| version    | The image version to use for the deployment; defaults to "latest". | `optional(string)` |
 | domain     | The domain name to use for the service; used in the URL map. | `optional(string)` |
 | env        | Environment variables to set for the service. | `optional(map(string))` |
 | containers | Options for the ECS service.<br>- cpu: The amount of CPU to allocate to the service. Defaults to "1".<br>- memory: The amount of memory to allocate to the service. Defaults to "2048Mi".<br>- min_instances: The minimum number of instances to run. Defaults to 0.<br>- max_instances: The maximum number of instances to run. Defaults to 100. | <pre>optional(object({<br>  cpu           = optional(string)<br>  memory        = optional(string)<br>  min_instances = optional(number)<br>  max_instances = optional(number)<br>}))</pre> |
@@ -110,6 +111,7 @@ Options regarding the astra-assistants-api deployment. If not set, assistants is
 
 | Field      | Description | Type |
 | ---------- | ----------- | ---- |
+| version    | The image version to use for the deployment; defaults to "latest". | `optional(string)` |
 | domain     | The domain name to use for the service; used in the URL map. | `optional(string)` |
 | env        | Environment variables to set for the service. | `optional(map(string))` |
 | db         | Options for the database Astra Assistants uses.<br>- regions: The regions to deploy the database to. Defaults to the first available region.<br>- deletion_protection: Whether to enable deletion protection on the database.<br>- cloud_provider: The cloud provider to use for the database. Defaults to "gcp". | <pre>optional(object({<br>  regions             = optional(set(string))<br>  deletion_protection = optional(bool)<br>  cloud_provider      = optional(string)<br>}))</pre> |

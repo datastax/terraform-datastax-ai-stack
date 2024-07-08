@@ -1,7 +1,8 @@
 variable "config" {
   type = object({
-    domain     = optional(string)
-    env        = optional(map(string))
+    version = optional(string)
+    domain  = optional(string)
+    env     = optional(map(string))
     containers = optional(object({
       cpu           = optional(string)
       memory        = optional(string)

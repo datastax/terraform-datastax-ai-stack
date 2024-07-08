@@ -15,7 +15,7 @@ output "service_uris" {
     for key, uri in {
       langflow   = try(var.langflow.domain, null) != null ? ["https://${var.langflow.domain}"] : module.langflow[*].service_uri
       assistants = try(var.assistants.domain, null) != null ? ["https://${var.assistants.domain}"] : module.assistants[*].service_uri
-    } : key => uri[0] if length(uri) > 0 
+    } : key => uri[0] if length(uri) > 0
   }
 }
 

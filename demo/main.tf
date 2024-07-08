@@ -20,60 +20,60 @@
 #   }
 # }
 
-# module "enterprise-gpts-gcp" {
-#   source = "../gcp"
+module "enterprise-gpts-gcp" {
+  source = "../gcp"
 
-#   project_config = {
-#     create_project = {
-#       billing_account = var.billing_account
-#     }
-#   }
-
-#   domain_config = {
-#     auto_cloud_dns_setup = true
-#     managed_zones = {
-#       default = { dns_name = "gcp.enterprise-ai-stack.com." }
-#     }
-#   }
-
-#   langflow = {
-#     domain = "langflow.gcp.enterprise-ai-stack.com"
-#   }
-
-#   assistants = {
-#     # domain = "assistants.gcp.enterprise-ai-stack.com"
-#     db = {
-#       regions             = ["us-east1"]
-#       deletion_protection = false
-#     }
-#   }
-# }
-
-module "enterprise-gpts-azure" {
-  source = "../azure"
-
-  resource_group_config = {
-    create_resource_group = {
-      name     = "enterprise-ai-stack"
-      location = "East US"
+  project_config = {
+    create_project = {
+      billing_account = var.billing_account
     }
   }
 
   domain_config = {
-    auto_azure_dns_setup = true
-    dns_zones = {
-      default = { dns_zone = "az.enterprise-ai-stack.com" }
+    auto_cloud_dns_setup = true
+    managed_zones = {
+      default = { dns_name = "gcp.enterprise-ai-stack.com." }
     }
   }
 
   langflow = {
-    subdomain = "langflow"
+    domain = "langflow.gcp.enterprise-ai-stack.com"
   }
 
   assistants = {
-    subdomain = "assistants"
+    # domain = "assistants.gcp.enterprise-ai-stack.com"
     db = {
+      regions             = ["us-east1"]
       deletion_protection = false
     }
   }
 }
+
+# module "enterprise-gpts-azure" {
+#   source = "../azure"
+#
+#   resource_group_config = {
+#     create_resource_group = {
+#       name     = "enterprise-ai-stack"
+#       location = "East US"
+#     }
+#   }
+#
+#   domain_config = {
+#     auto_azure_dns_setup = true
+#     dns_zones = {
+#       default = { dns_zone = "az.enterprise-ai-stack.com" }
+#     }
+#   }
+#
+#   langflow = {
+#     subdomain = "langflow"
+#   }
+#
+#   assistants = {
+#     subdomain = "assistants"
+#     db = {
+#       deletion_protection = false
+#     }
+#   }
+# }

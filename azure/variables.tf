@@ -59,6 +59,7 @@ variable "domain_config" {
 
 variable "assistants" {
   type = object({
+    version   = optional(string)
     subdomain = optional(string)
     env       = optional(map(string))
     db = optional(object({
@@ -77,6 +78,8 @@ variable "assistants" {
 
   description = <<EOF
     Options for the Astra Assistant API service.
+
+    version: The image version to use for the deployment; defaults to "latest".
 
     subdomain: The subdomain to use for the service, if `domain_config.auto_azure_dns_setup` is true. Should be null if `domain_config.auto_azure_dns_setup` is false.
 
@@ -97,6 +100,7 @@ variable "assistants" {
 
 variable "langflow" {
   type = object({
+    version   = optional(string)
     subdomain = optional(string)
     env       = optional(map(string))
     containers = optional(object({
@@ -110,6 +114,8 @@ variable "langflow" {
 
   description = <<EOF
     Options for the Langflow service.
+
+    version: The image version to use for the deployment; defaults to "latest".
 
     subdomain: The subdomain to use for the service, if `domain_config.auto_azure_dns_setup` is true. Should be null if `domain_config.auto_azure_dns_setup` is false.
 

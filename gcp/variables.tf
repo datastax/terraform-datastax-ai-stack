@@ -83,8 +83,9 @@ variable "domain_config" {
 
 variable "assistants" {
   type = object({
-    domain = optional(string)
-    env    = optional(map(string))
+    version = optional(string)
+    domain  = optional(string)
+    env     = optional(map(string))
     db = optional(object({
       regions             = optional(set(string))
       deletion_protection = optional(bool)
@@ -101,6 +102,8 @@ variable "assistants" {
 
   description = <<EOF
     Options for the Astra Assistant API service.
+
+    version: The image version to use for the deployment; defaults to "latest".
 
     domain: The domain name to use for the service; used in the URL mapping.
 
@@ -121,8 +124,9 @@ variable "assistants" {
 
 variable "langflow" {
   type = object({
-    domain = optional(string)
-    env    = optional(map(string))
+    version = optional(string)
+    domain  = optional(string)
+    env     = optional(map(string))
     containers = optional(object({
       cpu           = optional(string)
       memory        = optional(string)
@@ -134,6 +138,8 @@ variable "langflow" {
 
   description = <<EOF
     Options for the Langflow service.
+
+    version: The image version to use for the deployment; defaults to "latest".
 
     domain: The domain name to use for the service; used in the URL mapping. 
 

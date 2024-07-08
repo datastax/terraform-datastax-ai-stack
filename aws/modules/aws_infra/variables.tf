@@ -1,11 +1,11 @@
 variable "domain_config" {
   type = object({
     auto_route53_setup = optional(bool)
-    hosted_zones       = optional(map(object({
+    hosted_zones = optional(map(object({
       zone_id   = optional(string)
       zone_name = optional(string)
     })))
-    acm_cert_arn  = optional(string)
+    acm_cert_arn = optional(string)
   })
 }
 

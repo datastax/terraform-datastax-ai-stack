@@ -5,7 +5,7 @@ module "assistants_api_db" {
   config = {
     name                = "assistant_api_db"
     keyspace            = "assistant_api"
-    regions             = var.config.db.regions
+    regions             = try(coalesce(var.config.db.regions), null)
     deletion_protection = try(coalesce(var.config.db.deletion_protection), null)
     cloud_provider      = try(coalesce(var.config.db.cloud_provider), null)
   }
@@ -14,7 +14,7 @@ module "assistants_api_db" {
 locals {
   container_info = {
     name        = "astra-assistants"
-    image       = "datastax/astra-assistants:v0.1.20"
+    image       = "datastax/astra-assistants:${coalesce(var.config.version, "latest")}"
     port        = 8000
     entrypoint  = ["poetry", "run", "uvicorn", "impl.main:app", "--host", "0.0.0.0", "--port", "8000"]
     health_path = "/v1/health"
