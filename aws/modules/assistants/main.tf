@@ -4,7 +4,7 @@ module "assistants_api_db" {
 
   config = {
     name                = "assistant_api_db"
-    keyspace            = "assistant_api"
+    keyspaces           = ["assistant_api"]
     regions             = try(coalesce(var.config.db.regions), null)
     deletion_protection = try(coalesce(var.config.db.deletion_protection), null)
     cloud_provider      = try(coalesce(var.config.db.cloud_provider), null)

@@ -125,7 +125,7 @@ A list of configuration for each vector-enabled DB you may want to create/deploy
 | -------------------- | ------------------------------------------------------------------------------ | ----------------------- |
 | name                 | The name of the database to create.                                            | `string`                |
 | regions              | The regions to deploy the database to. Defaults to the first available region. | `optional(set(string))` |
-| keyspace             | The keyspace to use for the database. Defaults to "default_keyspace".          | `optional(string)`      |
+| keyspaces            | The keyspaces to use for the database. The first keyspace will be used as the initial one for the database. Defaults to just "default_keyspace". | `optional(list(string))` |
 | cloud_provider       | The cloud provider to use for the database. Defaults to "gcp".                 | `optional(string)`      |
 | deletion_protection  | Whether to enable deletion protection on the database.                         | `optional(bool)`        |
 

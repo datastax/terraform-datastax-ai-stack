@@ -47,6 +47,11 @@ module "enterprise-gpts-gcp" {
       deletion_protection = false
     }
   }
+
+  vector_dbs = [{
+    name      = "my_db"
+    keyspaces = ["main_keyspace", "other_keyspace"]
+  }]
 }
 
 # module "enterprise-gpts-azure" {

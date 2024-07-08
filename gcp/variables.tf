@@ -157,7 +157,7 @@ variable "vector_dbs" {
   type = list(object({
     name                = string
     regions             = optional(set(string))
-    keyspace            = optional(string)
+    keyspaces           = optional(list(string))
     cloud_provider      = optional(string)
     deletion_protection = optional(bool)
   }))
@@ -171,10 +171,10 @@ variable "vector_dbs" {
 
     regions: The regions to deploy the database to. Defaults to the first available region.
 
-    keyspace: The keyspace to use for the database. Defaults to "default_keyspace".
+    keyspaces: The keyspaces to use for the database. The first keyspace will be used as the initial one for the database. Defaults to just "default_keyspace".
 
     cloud_provider: The cloud provider to use for the database. Defaults to "gcp".
 
-    deletion_protection: Whether to enable deletion protection on the database.
+    deletion_protection: Whether to enable deletion protection on the database. Defaults to true.
   EOF
 }
