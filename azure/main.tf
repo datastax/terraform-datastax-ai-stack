@@ -3,9 +3,9 @@ locals {
   create_langflow   = var.langflow != null
 
   infrastructure = {
-    container_app_environment_id = module.azure_infra.container_app_environment_id
-    resource_group_name          = module.azure_infra.resource_group_name
-    resource_group_id            = module.azure_infra.resource_group_id
+    container_app_environment_id = try(module.azure_infra[0].container_app_environment_id, null)
+    resource_group_name          = try(module.azure_infra[0].resource_group_name, null)
+    resource_group_id            = try(module.azure_infra[0].resource_group_id, null)
     cloud_provider               = "gcp"
   }
 
@@ -31,6 +31,7 @@ locals {
 
 module "azure_infra" {
   source = "./modules/azure_infra"
+  count  = local.azure_infra_checks_pass ? 1 : 0
 
   domain_config         = var.domain_config
   resource_group_config = var.resource_group_config

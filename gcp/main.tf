@@ -3,8 +3,8 @@ locals {
   create_langflow   = var.langflow != null
 
   infrastructure = {
-    project_id     = module.gcp_infra.project_id
-    location       = module.gcp_infra.location
+    project_id     = try(module.gcp_infra[0].project_id, null)
+    location       = try(module.gcp_infra[0].location, null)
     cloud_provider = "gcp"
   }
 
@@ -24,21 +24,9 @@ locals {
   ]
 }
 
-check "domain_config" {
-  assert {
-    condition = !var.domain_config.auto_cloud_dns_setup || alltrue([
-      for component in local.components[*]["name"] : (try(
-        var.domain_config.managed_zones[component],
-        var.domain_config.managed_zones["default"],
-        null
-      ) != null)
-    ])
-    error_message = "If managed_zones is set, a managed zone must be provided for every component"
-  }
-}
-
 module "gcp_infra" {
   source = "./modules/gcp_infra"
+  count  = local.gcp_infra_checks_pass ? 1 : 0
 
   project_config   = var.project_config
   cloud_run_config = var.cloud_run_config

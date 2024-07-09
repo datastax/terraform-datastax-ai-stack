@@ -1,13 +1,13 @@
 output "load_balancer_ip" {
-  value = module.gcp_infra.load_balancer_ip
+  value = try(module.gcp_infra[0].load_balancer_ip, null)
 }
 
 output "project_id" {
-  value = module.gcp_infra.project_id
+  value = try(module.gcp_infra[0].project_id, null)
 }
 
 output "name_servers" {
-  value = module.gcp_infra.name_servers
+  value = try(module.gcp_infra[0].name_servers, null)
 }
 
 output "service_uris" {

@@ -1,23 +1,28 @@
 # module "enterprise-gpts-aws" {
 #   source = "../aws"
-
+#
 #   domain_config = {
 #     auto_route53_setup = true
 #     hosted_zones = {
 #       default = { zone_name = "enterprise-ai-stack.com" }
 #     }
 #   }
-
+#
 #   langflow = {
 #     domain = "langflow.enterprise-ai-stack.com"
 #   }
-
+#
 #   assistants = {
 #     domain = "assistants.enterprise-ai-stack.com"
 #     db = {
 #       deletion_protection = false
 #     }
 #   }
+#
+#   vector_dbs = [{
+#     name      = "my_db"
+#     keyspaces = ["main_keyspace", "other_keyspace"]
+#   }]
 # }
 
 module "enterprise-gpts-gcp" {
@@ -81,4 +86,9 @@ module "enterprise-gpts-gcp" {
 #       deletion_protection = false
 #     }
 #   }
+#
+#   vector_dbs = [{
+#     name      = "my_db"
+#     keyspaces = ["main_keyspace", "other_keyspace"]
+#   }]
 # }

@@ -6,10 +6,10 @@ variable "resource_group_config" {
       location = string
     }))
   })
-  nullable = false
+  default = null
 
   validation {
-    condition     = var.resource_group_config.resource_group_name != null && var.resource_group_config.create_resource_group == null || var.resource_group_config.resource_group_name == null && var.resource_group_config.create_resource_group != null
+    condition     = try(var.resource_group_config.resource_group_name != null && var.resource_group_config.create_resource_group == null || var.resource_group_config.resource_group_name == null && var.resource_group_config.create_resource_group != null, true)
     error_message = "Either resource_group_name or create_resource_group must be set"
   }
 
@@ -34,15 +34,15 @@ variable "domain_config" {
       resource_group_name = optional(string)
     })))
   })
-  nullable = false
+  default = null
 
   validation {
-    condition     = !var.domain_config.auto_azure_dns_setup || var.domain_config.dns_zones != null
+    condition     = try(!var.domain_config.auto_azure_dns_setup || var.domain_config.dns_zones != null, true)
     error_message = "If auto_azure_dns_setup is true, dns_zones must be set"
   }
 
   validation {
-    condition     = var.domain_config.auto_azure_dns_setup || var.domain_config.dns_zones == null
+    condition     = try(var.domain_config.auto_azure_dns_setup || var.domain_config.dns_zones == null, true)
     error_message = "If auto_azure_dns_setup is false, dns_zones must not be set"
   }
 

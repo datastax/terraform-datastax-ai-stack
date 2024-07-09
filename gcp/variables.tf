@@ -7,11 +7,11 @@ variable "project_config" {
       billing_account = string
     }))
   })
-  nullable  = false
+  default   = null
   sensitive = true
 
   validation {
-    condition     = var.project_config.project_id != null && var.project_config.create_project == null || var.project_config.project_id == null && var.project_config.create_project != null
+    condition     = try(var.project_config.project_id != null && var.project_config.create_project == null || var.project_config.project_id == null && var.project_config.create_project != null, true)
     error_message = "Either project_id or create_project must be set"
   }
 
@@ -50,23 +50,26 @@ variable "domain_config" {
       zone_name = optional(string)
     })))
   })
-  nullable = false
+  default = null
 
   validation {
-    condition     = !var.domain_config.auto_cloud_dns_setup || var.domain_config.managed_zones != null
+    condition     = try(!var.domain_config.auto_cloud_dns_setup || var.domain_config.managed_zones != null, true)
     error_message = "If auto_cloud_dns_setup is true, managed_zones must be set"
   }
 
   validation {
-    condition     = var.domain_config.auto_cloud_dns_setup || var.domain_config.managed_zones == null
+    condition     = try(var.domain_config.auto_cloud_dns_setup || var.domain_config.managed_zones == null, true)
     error_message = "If auto_cloud_dns_setup is false, managed_zones must not be set"
   }
 
   validation {
-    condition = var.domain_config.managed_zones == null || alltrue([
-      for component, zone in coalesce(var.domain_config.managed_zones, {}) :
-      (length(compact([zone.dns_name, zone.zone_name])) == 1)
-    ])
+    condition = try(
+      var.domain_config.managed_zones == null || alltrue([
+        for component, zone in coalesce(var.domain_config.managed_zones, {}) :
+        (length(compact([zone.dns_name, zone.zone_name])) == 1)
+      ]),
+      true
+    )
     error_message = "If managed_zones is set, (exactly) one of either dns_name or zone_name must be set"
   }
 

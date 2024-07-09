@@ -7,15 +7,15 @@ variable "domain_config" {
     })))
     acm_cert_arn = optional(string)
   })
-  nullable = false
+  default = null
 
   validation {
-    condition     = !(var.domain_config.auto_route53_setup == true && length(var.domain_config.hosted_zones) == 0)
+    condition     = try(!(var.domain_config.auto_route53_setup == true && length(var.domain_config.hosted_zones) == 0), true)
     error_message = "auto_route53_setup requires hosted_zones to be provided"
   }
 
   validation {
-    condition     = !(var.domain_config.auto_route53_setup == false && var.domain_config.acm_cert_arn == null)
+    condition     = try(!(var.domain_config.auto_route53_setup == false && var.domain_config.acm_cert_arn == null), true)
     error_message = "must provide an acm_cert_arn if auto_route53_setup isn't true"
   }
 
@@ -149,7 +149,7 @@ variable "vector_dbs" {
   type = list(object({
     name                = string
     regions             = optional(set(string))
-    keyspace            = optional(string)
+    keyspaces           = optional(list(string))
     cloud_provider      = optional(string)
     deletion_protection = optional(bool)
   }))
