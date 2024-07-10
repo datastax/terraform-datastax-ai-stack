@@ -16,7 +16,7 @@ You may want a custom domain to attach to the Langflow/Assistants services, but 
 ## Basic usage
 
 ```hcl
-module "enterprise-gpts-gcp" {
+module "datastax-ai-stack-gcp" {
   source = "../gcp"
 
   project_config = {
@@ -48,8 +48,8 @@ module "enterprise-gpts-gcp" {
 
   vector_dbs = [
     {
-      name     = "my_vector_db"
-      keyspace = "my_keyspace"
+      name      = "my_vector_db"
+      keyspaces = ["my_keyspace1", "my_keyspace2"]
     }
   ]
 }
@@ -64,7 +64,7 @@ module "enterprise-gpts-gcp" {
 
 ## Inputs
 
-### `project_config` (required)
+### `project_config` (required if using GCP-deployed components)
 
 Options related to the project these deployments are tied to. If project_id is set, that project will be used. If create_project is set, a project will be created with the given options. One of the two must be set.
 
@@ -75,7 +75,7 @@ If further customization is desired, the project can be created manually and the
 | project_id     | The ID of the project to use. | `optional(string)` | 
 | create_project | Options to use when creating a new project.<br>- name: The name of the project to create. If not set, a random name will be generated.<br>- org_id: The ID of the organization to create the project in.<br>- billing_account: The ID of the billing account to associate with the project. | <pre>optional(object({<br>  name            = optional(string)<br>  org_id          = optional(string)<br>  billing_account = string<br>}))</pre> |
 
-### `domain_config` (required)
+### `domain_config` (required if using GCP-deployed components)
 
 Options related to DNS/HTTPS setup. If you create a managed zone on Cloud DNS, this module is able to handle the most of this for you.
 

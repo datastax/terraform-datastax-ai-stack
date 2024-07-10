@@ -1,4 +1,4 @@
-# module "enterprise-gpts-aws" {
+# module "datastax-ai-stack-aws" {
 #   source = "../aws"
 #
 #   domain_config = {
@@ -25,7 +25,7 @@
 #   }]
 # }
 
-module "enterprise-gpts-gcp" {
+module "datastax-ai-stack-gcp" {
   source = "../gcp"
 
   project_config = {
@@ -59,7 +59,7 @@ module "enterprise-gpts-gcp" {
   }]
 }
 
-# module "enterprise-gpts-azure" {
+# module "datastax-ai-stack-azure" {
 #   source = "../azure"
 #
 #   resource_group_config = {

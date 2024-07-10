@@ -18,7 +18,7 @@ To allow the module to configure necessary any DNS settings, you'll also need to
 ## Basic usage
 
 ```hcl
-module "enterprise-gpts-aws" {
+module "datastax-ai-stack-aws" {
   source = "../aws"
 
   domain_config = {
@@ -44,8 +44,8 @@ module "enterprise-gpts-aws" {
 
   vector_dbs = [
     {
-      name     = "my_vector_db"
-      keyspace = "my_keyspace"
+      name      = "my_vector_db"
+      keyspaces = ["my_keyspace1", "my_keyspace2"]
     }
   ]
 }
@@ -71,7 +71,7 @@ Options related to the VPC/infrastructure. If not provided, a new VPC will be cr
 | private_subnets | A list of private subnet IDs to create the ECS instances in. | `list(string)` | 
 | security_groups | A list of security group IDs to attach to the ALB.           | `list(string)` | 
 
-### `domain_config` (required)
+### `domain_config` (required if using ECS-deployed components)
 
 Options related to DNS/HTTPS setup. If you create a hosted zone on Route53, this module is able to handle the most of this for you.
 

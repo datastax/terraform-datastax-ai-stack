@@ -18,7 +18,7 @@ To allow the module to configure necessary any DNS/Custom Domain settings, you'l
 ## Basic usage
 
 ```hcl
-module "enterprise-gpts-azure" {
+module "datastax-ai-stack-azure" {
   source = "../azure"
 
   resource_group_config = {
@@ -48,6 +48,13 @@ module "enterprise-gpts-azure" {
       deletion_protection = false
     }
   }
+
+  vector_dbs = [
+    {
+      name      = "my_vector_db"
+      keyspaces = ["my_keyspace1", "my_keyspace2"]
+    }
+  ]
 }
 ```
 
@@ -60,7 +67,7 @@ module "enterprise-gpts-azure" {
 
 ## Inputs
 
-### `resource_group_config` (required)
+### `resource_group_config` (required if using Azure-deployed components)
 
 Sets the resource group to use for the deployment. If resource_group_name is set, that group will be used. If create_resource_group is set, a group will be created with the given options. One of the two must be set.
 
@@ -71,7 +78,7 @@ If further customization is desired, the resource group can be created manually 
 | resource_group_name   | The name of the resource group to use. | `optional(string)` | 
 | create_resource_group | Options to use when creating a new resource group.<br>- name: The name of the resource group to create.<br>- location: The location to create the resource group in (e.g. "East US"). | <pre>optional(object({<br>  name     = string<br>  location = string<br>}))</pre> |
 
-### `domain_config` (required)
+### `domain_config` (required if using Azure-deployed components)
 
 Options related to DNS/HTTPS setup. If you create a DNS zone on Azure DNS, this module is able to handle the most of this for you.
 

@@ -12,9 +12,9 @@ module "vpc" {
 
   count = local.create_vpc ? 1 : 0
 
-  name = "enterprise-gpts-vpc"
+  name = "datastax-vpc"
   tags = {
-    Project = "enterprise-gpts"
+    Project = "datastax"
   }
 
   azs                = slice(data.aws_availability_zones.available.names, 0, 2)
@@ -45,9 +45,9 @@ module "alb" {
 
   enable_deletion_protection = false
 
-  name = "enterprise-gpts-alb"
+  name = "datastax-alb"
   tags = {
-    Project = "enterprise-gpts"
+    Project = "datastax"
   }
 
   vpc_id          = local.vpc_id
@@ -124,7 +124,7 @@ module "ecs" {
   source  = "terraform-aws-modules/ecs/aws"
   version = "~> 5.11.1"
 
-  cluster_name = "enterprise-gpts-ecs-cluster"
+  cluster_name = "datastax-ecs-cluster"
 
   fargate_capacity_providers = {
     FARGATE = {
@@ -145,7 +145,7 @@ module "ecs" {
 resource "aws_security_group" "ecs_cluster_sg" {
   vpc_id = local.vpc_id
 
-  name = "enterprise-gpts-ecs-cluster-sg"
+  name = "datastax-ecs-cluster-sg"
 
   ingress {
     from_port       = 0
@@ -217,8 +217,8 @@ resource "aws_acm_certificate" "service_cert" {
   }
 
   tags = {
-    Project = "enterprise-gpts"
-    Name    = "enterprise-gpts-service-cert"
+    Project = "datastax"
+    Name    = "datastax-service-cert"
   }
 }
 

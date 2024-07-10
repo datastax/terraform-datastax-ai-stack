@@ -16,13 +16,13 @@ locals {
 }
 
 resource "azurerm_log_analytics_workspace" "this" {
-  name                = "log-enterprise-gpts"
+  name                = "log-datastax-ai"
   location            = local.rg_location
   resource_group_name = local.rg_name
 }
 
 resource "azurerm_container_app_environment" "this" {
-  name                       = "cae-enterprise-gpts"
+  name                       = "cae-datastax-ai"
   location                   = local.rg_location
   resource_group_name        = local.rg_name
   log_analytics_workspace_id = azurerm_log_analytics_workspace.this.id
