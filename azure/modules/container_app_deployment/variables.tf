@@ -3,8 +3,8 @@ variable "container_info" {
     name        = string
     image       = string
     port        = number
-    env = map(string)
-    entrypoint = optional(list(string))
+    env         = map(string)
+    entrypoint  = optional(list(string))
     health_path = string
   })
 }
@@ -12,8 +12,8 @@ variable "container_info" {
 variable "config" {
   type = object({
     containers = optional(object({
-      cpu = optional(number)
-      memory = optional(string)
+      cpu           = optional(number)
+      memory        = optional(string)
       min_instances = optional(number)
       max_instances = optional(number)
     }))

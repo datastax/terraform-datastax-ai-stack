@@ -2,7 +2,7 @@ variable "config" {
   type = object({
     name                = string
     regions             = optional(set(string))
-    keyspace            = optional(string)
+    keyspaces           = optional(list(string))
     cloud_provider      = optional(string)
     deletion_protection = optional(bool)
   })

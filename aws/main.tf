@@ -3,9 +3,9 @@ locals {
   create_langflow   = var.langflow != null
 
   infrastructure = {
-    cluster         = try(module.aws_infra.ecs_cluster_id, null)
-    security_groups = try(module.aws_infra.security_groups, null)
-    subnets         = try(module.aws_infra.private_subnets, null)
+    cluster         = try(module.aws_infra[0].ecs_cluster_id, null)
+    security_groups = try(module.aws_infra[0].security_groups, null)
+    subnets         = try(module.aws_infra[0].private_subnets, null)
     cloud_provider  = "aws"
   }
 
@@ -29,6 +29,7 @@ locals {
 
 module "aws_infra" {
   source = "./modules/aws_infra"
+  count  = local.aws_infra_checks_pass ? 1 : 0
 
   alb_config     = var.infrastructure
   domain_config  = var.domain_config
@@ -41,7 +42,7 @@ module "assistants" {
   count  = local.create_assistants ? 1 : 0
 
   infrastructure   = local.infrastructure
-  target_group_arn = module.aws_infra.target_groups[module.assistants[0].container_info.name].arn
+  target_group_arn = module.aws_infra[0].target_groups[module.assistants[0].container_info.name].arn
   config           = var.assistants
 }
 
@@ -50,7 +51,7 @@ module "langflow" {
   count  = local.create_langflow ? 1 : 0
 
   infrastructure   = local.infrastructure
-  target_group_arn = module.aws_infra.target_groups[module.langflow[0].container_info.name].arn
+  target_group_arn = module.aws_infra[0].target_groups[module.langflow[0].container_info.name].arn
   config           = var.langflow
 }
 

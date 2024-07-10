@@ -1,7 +1,8 @@
 variable "config" {
   type = object({
-    env = optional(map(string))
-    db  = optional(object({
+    version = optional(string)
+    env     = optional(map(string))
+    db = optional(object({
       regions             = optional(set(string))
       deletion_protection = optional(bool)
       cloud_provider      = optional(string)

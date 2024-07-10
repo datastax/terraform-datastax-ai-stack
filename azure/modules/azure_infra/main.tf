@@ -10,19 +10,19 @@ data "azurerm_resource_group" "this" {
 }
 
 locals {
-  rg_name = try(data.azurerm_resource_group.this[0].name, azurerm_resource_group.this[0].name)
+  rg_name     = try(data.azurerm_resource_group.this[0].name, azurerm_resource_group.this[0].name)
   rg_location = try(data.azurerm_resource_group.this[0].location, azurerm_resource_group.this[0].location)
-  rg_id = try(data.azurerm_resource_group.this[0].id, azurerm_resource_group.this[0].id)
+  rg_id       = try(data.azurerm_resource_group.this[0].id, azurerm_resource_group.this[0].id)
 }
 
 resource "azurerm_log_analytics_workspace" "this" {
-  name                = "log-enterprise-gpts"
+  name                = "log-datastax-ai"
   location            = local.rg_location
   resource_group_name = local.rg_name
 }
 
 resource "azurerm_container_app_environment" "this" {
-  name                       = "cae-enterprise-gpts"
+  name                       = "cae-datastax-ai"
   location                   = local.rg_location
   resource_group_name        = local.rg_name
   log_analytics_workspace_id = azurerm_log_analytics_workspace.this.id
@@ -30,7 +30,7 @@ resource "azurerm_container_app_environment" "this" {
 
 locals {
   auto_azure_dns_setup = try(var.domain_config.auto_azure_dns_setup, null) == true
-  dns_zones = coalesce(var.domain_config.dns_zones, {})
+  dns_zones            = coalesce(var.domain_config.dns_zones, {})
 
   # LUT for DNS zones that may not include the resource_group_name
   partial_dns_zones_lut = {
@@ -146,10 +146,10 @@ resource "azapi_resource" "managed_certificates" {
   for_each = local.components_if_dns_setup
 
   depends_on = [time_sleep.dns_propagation, azapi_resource_action.custom_domains]
-  type      = "Microsoft.App/ManagedEnvironments/managedCertificates@2023-05-01"
-  name      = "${each.key}-cert"
-  parent_id = azurerm_container_app_environment.this.id
-  location  = local.rg_location
+  type       = "Microsoft.App/ManagedEnvironments/managedCertificates@2023-05-01"
+  name       = "${each.key}-cert"
+  parent_id  = azurerm_container_app_environment.this.id
+  location   = local.rg_location
 
   body = jsonencode({
     properties = {

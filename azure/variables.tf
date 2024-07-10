@@ -6,10 +6,10 @@ variable "resource_group_config" {
       location = string
     }))
   })
-  nullable = false
+  default = null
 
   validation {
-    condition     = var.resource_group_config.resource_group_name != null && var.resource_group_config.create_resource_group == null || var.resource_group_config.resource_group_name == null && var.resource_group_config.create_resource_group != null
+    condition     = try(var.resource_group_config.resource_group_name != null && var.resource_group_config.create_resource_group == null || var.resource_group_config.resource_group_name == null && var.resource_group_config.create_resource_group != null, true)
     error_message = "Either resource_group_name or create_resource_group must be set"
   }
 
@@ -34,15 +34,15 @@ variable "domain_config" {
       resource_group_name = optional(string)
     })))
   })
-  nullable = false
+  default = null
 
   validation {
-    condition     = !var.domain_config.auto_azure_dns_setup || var.domain_config.dns_zones != null
+    condition     = try(!var.domain_config.auto_azure_dns_setup || var.domain_config.dns_zones != null, true)
     error_message = "If auto_azure_dns_setup is true, dns_zones must be set"
   }
 
   validation {
-    condition     = var.domain_config.auto_azure_dns_setup || var.domain_config.dns_zones == null
+    condition     = try(var.domain_config.auto_azure_dns_setup || var.domain_config.dns_zones == null, true)
     error_message = "If auto_azure_dns_setup is false, dns_zones must not be set"
   }
 
@@ -59,6 +59,7 @@ variable "domain_config" {
 
 variable "assistants" {
   type = object({
+    version   = optional(string)
     subdomain = optional(string)
     env       = optional(map(string))
     db = optional(object({
@@ -77,6 +78,8 @@ variable "assistants" {
 
   description = <<EOF
     Options for the Astra Assistant API service.
+
+    version: The image version to use for the deployment; defaults to "latest".
 
     subdomain: The subdomain to use for the service, if `domain_config.auto_azure_dns_setup` is true. Should be null if `domain_config.auto_azure_dns_setup` is false.
 
@@ -97,6 +100,7 @@ variable "assistants" {
 
 variable "langflow" {
   type = object({
+    version   = optional(string)
     subdomain = optional(string)
     env       = optional(map(string))
     containers = optional(object({
@@ -110,6 +114,8 @@ variable "langflow" {
 
   description = <<EOF
     Options for the Langflow service.
+
+    version: The image version to use for the deployment; defaults to "latest".
 
     subdomain: The subdomain to use for the service, if `domain_config.auto_azure_dns_setup` is true. Should be null if `domain_config.auto_azure_dns_setup` is false.
 
@@ -127,7 +133,7 @@ variable "vector_dbs" {
   type = list(object({
     name                = string
     regions             = optional(set(string))
-    keyspace            = optional(string)
+    keyspaces           = optional(list(string))
     cloud_provider      = optional(string)
     deletion_protection = optional(bool)
   }))
@@ -141,10 +147,10 @@ variable "vector_dbs" {
 
     regions: The regions to deploy the database to. Defaults to the first available region.
 
-    keyspace: The keyspace to use for the database. Defaults to "default_keyspace".
+    keyspaces: The keyspaces to use for the database. The first keyspace will be used as the initial one for the database. Defaults to just "default_keyspace".
 
     cloud_provider: The cloud provider to use for the database. Defaults to "azure".
 
-    deletion_protection: Whether to enable deletion protection on the database.
+    deletion_protection: Whether to enable deletion protection on the database. Defaults to true.
   EOF
 }

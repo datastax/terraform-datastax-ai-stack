@@ -24,8 +24,8 @@ resource "azurerm_container_app" "this" {
     container {
       name    = var.container_info.name
       image   = var.container_info.image
-      cpu = try(coalesce(var.config.containers.cpu), 1)
-      memory = try(coalesce(var.config.containers.memory), "2Gi")
+      cpu     = try(coalesce(var.config.containers.cpu), 1)
+      memory  = try(coalesce(var.config.containers.memory), "2Gi")
       command = var.container_info.entrypoint
 
       liveness_probe {

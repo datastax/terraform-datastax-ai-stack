@@ -7,11 +7,11 @@ variable "project_config" {
       billing_account = string
     }))
   })
-  nullable  = false
+  default   = null
   sensitive = true
 
   validation {
-    condition     = var.project_config.project_id != null && var.project_config.create_project == null || var.project_config.project_id == null && var.project_config.create_project != null
+    condition     = try(var.project_config.project_id != null && var.project_config.create_project == null || var.project_config.project_id == null && var.project_config.create_project != null, true)
     error_message = "Either project_id or create_project must be set"
   }
 
@@ -50,23 +50,26 @@ variable "domain_config" {
       zone_name = optional(string)
     })))
   })
-  nullable = false
+  default = null
 
   validation {
-    condition     = !var.domain_config.auto_cloud_dns_setup || var.domain_config.managed_zones != null
+    condition     = try(!var.domain_config.auto_cloud_dns_setup || var.domain_config.managed_zones != null, true)
     error_message = "If auto_cloud_dns_setup is true, managed_zones must be set"
   }
 
   validation {
-    condition     = var.domain_config.auto_cloud_dns_setup || var.domain_config.managed_zones == null
+    condition     = try(var.domain_config.auto_cloud_dns_setup || var.domain_config.managed_zones == null, true)
     error_message = "If auto_cloud_dns_setup is false, managed_zones must not be set"
   }
 
   validation {
-    condition = var.domain_config.managed_zones == null || alltrue([
-      for component, zone in coalesce(var.domain_config.managed_zones, {}) :
-      (length(compact([zone.dns_name, zone.zone_name])) == 1)
-    ])
+    condition = try(
+      var.domain_config.managed_zones == null || alltrue([
+        for component, zone in coalesce(var.domain_config.managed_zones, {}) :
+        (length(compact([zone.dns_name, zone.zone_name])) == 1)
+      ]),
+      true
+    )
     error_message = "If managed_zones is set, (exactly) one of either dns_name or zone_name must be set"
   }
 
@@ -83,8 +86,9 @@ variable "domain_config" {
 
 variable "assistants" {
   type = object({
-    domain = optional(string)
-    env    = optional(map(string))
+    version = optional(string)
+    domain  = optional(string)
+    env     = optional(map(string))
     db = optional(object({
       regions             = optional(set(string))
       deletion_protection = optional(bool)
@@ -101,6 +105,8 @@ variable "assistants" {
 
   description = <<EOF
     Options for the Astra Assistant API service.
+
+    version: The image version to use for the deployment; defaults to "latest".
 
     domain: The domain name to use for the service; used in the URL mapping.
 
@@ -121,8 +127,9 @@ variable "assistants" {
 
 variable "langflow" {
   type = object({
-    domain = optional(string)
-    env    = optional(map(string))
+    version = optional(string)
+    domain  = optional(string)
+    env     = optional(map(string))
     containers = optional(object({
       cpu           = optional(string)
       memory        = optional(string)
@@ -134,6 +141,8 @@ variable "langflow" {
 
   description = <<EOF
     Options for the Langflow service.
+
+    version: The image version to use for the deployment; defaults to "latest".
 
     domain: The domain name to use for the service; used in the URL mapping. 
 
@@ -151,7 +160,7 @@ variable "vector_dbs" {
   type = list(object({
     name                = string
     regions             = optional(set(string))
-    keyspace            = optional(string)
+    keyspaces           = optional(list(string))
     cloud_provider      = optional(string)
     deletion_protection = optional(bool)
   }))
@@ -165,10 +174,10 @@ variable "vector_dbs" {
 
     regions: The regions to deploy the database to. Defaults to the first available region.
 
-    keyspace: The keyspace to use for the database. Defaults to "default_keyspace".
+    keyspaces: The keyspaces to use for the database. The first keyspace will be used as the initial one for the database. Defaults to just "default_keyspace".
 
     cloud_provider: The cloud provider to use for the database. Defaults to "gcp".
 
-    deletion_protection: Whether to enable deletion protection on the database.
+    deletion_protection: Whether to enable deletion protection on the database. Defaults to true.
   EOF
 }

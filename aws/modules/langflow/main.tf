@@ -1,7 +1,7 @@
 locals {
   container_info = {
     name        = "langflow"
-    image       = "langflowai/langflow:latest"
+    image       = "langflowai/langflow:${coalesce(var.config.version, "latest")}"
     port        = 7860
     health_path = "health"
     env         = var.config.env

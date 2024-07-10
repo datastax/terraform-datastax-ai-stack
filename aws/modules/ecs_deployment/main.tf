@@ -53,7 +53,7 @@ resource "aws_ecs_task_definition" "this" {
       }
       environment = concat([
         { name = "ECS_ENABLE_CONTAINER_METADATA", value = "true" }
-      ], [
+        ], [
         for key, value in coalesce(var.container_info.env, {}) : {
           name  = key
           value = value

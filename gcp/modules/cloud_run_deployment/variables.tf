@@ -11,7 +11,7 @@ variable "container_info" {
 
 variable "config" {
   type = object({
-    domain     = optional(string)
+    domain = optional(string)
     containers = optional(object({
       cpu           = optional(string)
       memory        = optional(string)

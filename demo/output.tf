@@ -1,14 +1,14 @@
-# output "enterprise-gpts-aws" {
-#   value     = module.enterprise-gpts-aws
+# output "datastax-ai-stack-aws" {
+#   value     = module.datastax-ai-stack-aws
 #   sensitive = true
 # }
 
-# output "enterprise-gpts-gcp" {
-#   value     = module.enterprise-gpts-gcp
-#   sensitive = true
-# }
-
-output "enterprise-gpts-azure" {
-  value     = module.enterprise-gpts-azure
+output "datastax-ai-stack-gcp" {
+  value     = module.datastax-ai-stack-gcp
   sensitive = true
 }
+
+# output "datastax-ai-stack-azure" {
+#   value     = module.datastax-ai-stack-azure
+#   sensitive = true
+# }

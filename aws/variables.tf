@@ -1,21 +1,21 @@
 variable "domain_config" {
   type = object({
     auto_route53_setup = bool
-    hosted_zones       = optional(map(object({
+    hosted_zones = optional(map(object({
       zone_id   = optional(string)
       zone_name = optional(string)
     })))
     acm_cert_arn = optional(string)
   })
-  nullable = false
+  default = null
 
   validation {
-    condition     = !(var.domain_config.auto_route53_setup == true && length(var.domain_config.hosted_zones) == 0)
+    condition     = try(!(var.domain_config.auto_route53_setup == true && length(var.domain_config.hosted_zones) == 0), true)
     error_message = "auto_route53_setup requires hosted_zones to be provided"
   }
 
   validation {
-    condition     = !(var.domain_config.auto_route53_setup == false && var.domain_config.acm_cert_arn == null)
+    condition     = try(!(var.domain_config.auto_route53_setup == false && var.domain_config.acm_cert_arn == null), true)
     error_message = "must provide an acm_cert_arn if auto_route53_setup isn't true"
   }
 
@@ -75,9 +75,10 @@ variable "fargate_config" {
 
 variable "assistants" {
   type = object({
-    domain = string
-    env    = optional(map(string))
-    db     = optional(object({
+    version = optional(string)
+    domain  = string
+    env     = optional(map(string))
+    db = optional(object({
       regions             = optional(set(string))
       deletion_protection = optional(bool)
       cloud_provider      = optional(string)
@@ -93,6 +94,8 @@ variable "assistants" {
 
   description = <<EOF
     Options for the Astra Assistant API service.
+
+    version: The image version to use for the deployment; defaults to "latest".
 
     domain: The domain name to use for the service; used in the listener routing rules.
 
@@ -113,8 +116,9 @@ variable "assistants" {
 
 variable "langflow" {
   type = object({
-    domain     = string
-    env        = optional(map(string))
+    version = optional(string)
+    domain  = string
+    env     = optional(map(string))
     containers = optional(object({
       cpu           = optional(number)
       memory        = optional(number)
@@ -126,6 +130,8 @@ variable "langflow" {
 
   description = <<EOF
     Options for the Langflow service.
+
+    version: The image version to use for the deployment; defaults to "latest".
 
     domain: The domain name to use for the service; used in the listener routing rules.
 
@@ -143,7 +149,7 @@ variable "vector_dbs" {
   type = list(object({
     name                = string
     regions             = optional(set(string))
-    keyspace            = optional(string)
+    keyspaces           = optional(list(string))
     cloud_provider      = optional(string)
     deletion_protection = optional(bool)
   }))
@@ -157,11 +163,11 @@ variable "vector_dbs" {
 
     regions: The regions to deploy the database to. Defaults to the first available region.
 
-    keyspace: The keyspace to use for the database. Defaults to "default_keyspace".
+    keyspaces: The keyspaces to use for the database. The first keyspace will be used as the initial one for the database. Defaults to just "default_keyspace".
 
     cloud_provider: The cloud provider to use for the database. Defaults to "gcp".
 
-    deletion_protection: Whether to enable deletion protection on the database.
+    deletion_protection: Whether to enable deletion protection on the database. Defaults to true.
   EOF
 }
 

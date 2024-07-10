@@ -1,6 +1,6 @@
 variable "project_config" {
   type = object({
-    project_id      = optional(string)
+    project_id = optional(string)
     create_project = optional(object({
       name            = optional(string)
       org_id          = optional(string)
@@ -18,7 +18,7 @@ variable "cloud_run_config" {
 variable "domain_config" {
   type = object({
     auto_cloud_dns_setup = bool
-    managed_zones        = optional(map(object({
+    managed_zones = optional(map(object({
       dns_name  = optional(string)
       zone_name = optional(string)
     })))
