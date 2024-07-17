@@ -45,18 +45,18 @@ module "datastax-ai-stack-gcp" {
     domain = "langflow.gcp.enterprise-ai-stack.com"
   }
 
-  assistants = {
-    # domain = "assistants.gcp.enterprise-ai-stack.com"
-    db = {
-      regions             = ["us-east1"]
-      deletion_protection = false
-    }
-  }
-
-  vector_dbs = [{
-    name      = "my_db"
-    keyspaces = ["main_keyspace", "other_keyspace"]
-  }]
+#   assistants = {
+#     # domain = "assistants.gcp.enterprise-ai-stack.com"
+#     db = {
+#       regions             = ["us-east1"]
+#       deletion_protection = false
+#     }
+#   }
+#
+#   vector_dbs = [{
+#     name      = "my_db"
+#     keyspaces = ["main_keyspace", "other_keyspace"]
+#   }]
 }
 
 # module "datastax-ai-stack-azure" {
