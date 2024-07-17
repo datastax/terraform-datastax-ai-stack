@@ -1,5 +1,5 @@
 locals {
-  project_id = coalesce(var.project_config.project_id, module.project-factory[0].project_id)
+  project_id = coalesce(var.project_config.project_id, try(module.project-factory[0].project_id, null))
   location   = try(coalesce(var.cloud_run_config.location), data.google_cloud_run_locations.available.locations[0])
 }
 
@@ -15,12 +15,12 @@ module "project-factory" {
   source  = "terraform-google-modules/project-factory/google"
   version = "~> 15.0"
 
-  count = var.project_config != null ? 1 : 0
+  count = var.project_config.create_project != null ? 1 : 0
 
-  name            = try(coalesce(var.project_config.create_project.name), "dtsx-${random_id.proj_name.hex}")
-  org_id          = try(var.project_config.create_project.org_id, null)
+  name            = coalesce(var.project_config.create_project.name, "dtsx-${random_id.proj_name.hex}")
+  org_id          = var.project_config.create_project.org_id
   billing_account = var.project_config.create_project.billing_account
-  activate_apis   = compact(["run.googleapis.com", local.auto_cloud_dns_setup ? "dns.googleapis.com" : ""])
+  activate_apis   = compact(["run.googleapis.com", local.auto_cloud_dns_setup ? "dns.googleapis.com" : null])
 }
 
 resource "random_id" "url_map" {

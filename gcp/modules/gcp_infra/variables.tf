@@ -7,6 +7,7 @@ variable "project_config" {
       billing_account = string
     }))
   })
+  nullable = false
 }
 
 variable "cloud_run_config" {
@@ -23,6 +24,7 @@ variable "domain_config" {
       zone_name = optional(string)
     })))
   })
+  nullable = false
 }
 
 variable "components" {
@@ -31,4 +33,5 @@ variable "components" {
     domain       = optional(string)
     service_name = string
   }))
+  nullable = false
 }
