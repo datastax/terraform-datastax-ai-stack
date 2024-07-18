@@ -57,10 +57,10 @@ module "datastax-ai-stack-gcp" {
 
 ## Required providers
 
-| Name   | Version |
-|--------|---------|
-| astra  |         |
-| google |         |
+| Name   | Version  |
+|--------|----------|
+| astra  | >= 2.3.3 |
+| google | >= 5.0.0 |
 
 ## Inputs
 
