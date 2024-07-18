@@ -19,7 +19,8 @@ To allow the module to configure necessary any DNS settings, you'll also need to
 
 ```hcl
 module "datastax-ai-stack-aws" {
-  source = "../aws"
+  source  = "datastax/ai-stack/astra//modules/aws"
+  version = "1.0.0-beta.1"
 
   domain_config = {
     auto_route53_setup = true

@@ -19,7 +19,8 @@ To allow the module to configure necessary any DNS/Custom Domain settings, you'l
 
 ```hcl
 module "datastax-ai-stack-azure" {
-  source = "../azure"
+  source  = "datastax/ai-stack/astra//modules/azure"
+  version = "1.0.0-beta.1"
 
   resource_group_config = {
     create_resource_group = {

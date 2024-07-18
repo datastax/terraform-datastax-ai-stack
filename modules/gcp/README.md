@@ -17,7 +17,8 @@ You may want a custom domain to attach to the Langflow/Assistants services, but 
 
 ```hcl
 module "datastax-ai-stack-gcp" {
-  source = "../gcp"
+  source  = "datastax/ai-stack/astra//modules/gcp"
+  version = "1.0.0-beta.1"
 
   project_config = {
     create_project = {
