@@ -60,10 +60,10 @@ module "datastax-ai-stack-azure" {
 
 ## Required providers
 
-| Name    | Version |
-|---------|---------|
-| astra   |         |
-| azurerm |         |
+| Name    | Version   |
+|---------|-----------|
+| astra   | >= 2.3.3  |
+| azurerm | >= 3.79.0 |
 
 ## Inputs
 

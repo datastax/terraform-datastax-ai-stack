@@ -53,10 +53,10 @@ module "datastax-ai-stack-aws" {
 
 ## Required providers
 
-| Name  | Version |
-|-------|---------|
-| astra |         |
-| aws   |         |
+| Name  | Version  |
+|-------|----------|
+| astra | >= 2.3.3 |
+| aws   | >= 5.0.0 |
 
 ## Inputs
 
