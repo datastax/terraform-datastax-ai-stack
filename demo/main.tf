@@ -1,34 +1,34 @@
-module "datastax-ai-stack-aws" {
-  source = "../modules/aws"
+# module "datastax-ai-stack-aws" {
+#   source = "../modules/aws"
 
-  domain_config = {
-    auto_route53_setup = true
-    hosted_zones = {
-      default = { zone_name = "enterprise-ai-stack.com" }
-    }
-  }
+#   domain_config = {
+#     auto_route53_setup = true
+#     hosted_zones = {
+#       default = { zone_name = "enterprise-ai-stack.com" }
+#     }
+#   }
 
-  langflow = {
-    domain = "langflow.enterprise-ai-stack.com"
-    managed_db = {
-      instance_class      = "db.t3.micro"
-      deletion_protection = false
-    }
-  }
+#   langflow = {
+#     domain = "langflow.enterprise-ai-stack.com"
+#     managed_db = {
+#       instance_class      = "db.t3.micro"
+#       deletion_protection = false
+#     }
+#   }
 
-  assistants = {
-    domain = "assistants.enterprise-ai-stack.com"
-    managed_db = {
-      deletion_protection = false
-    }
-  }
+#   assistants = {
+#     domain = "assistants.enterprise-ai-stack.com"
+#     managed_db = {
+#       deletion_protection = false
+#     }
+#   }
 
-  # vector_dbs = [{
-  #   name      = "my_db"
-  #   keyspaces = ["main_keyspace", "other_keyspace"]
-  #   deletion_protection = false
-  # }]
-}
+#   # vector_dbs = [{
+#   #   name      = "my_db"
+#   #   keyspaces = ["main_keyspace", "other_keyspace"]
+#   #   deletion_protection = false
+#   # }]
+# }
 
 # module "datastax-ai-stack-gcp" {
 #   source = "../modules/gcp"
@@ -69,37 +69,41 @@ module "datastax-ai-stack-aws" {
 #   # }]
 # }
 
-# module "datastax-ai-stack-azure" {
-#   source = "../azure"
+module "datastax-ai-stack-azure" {
+  source = "../modules/azure"
 
-#   resource_group_config = {
-#     create_resource_group = {
-#       name     = "enterprise-ai-stack"
-#       location = "East US"
-#     }
-#   }
+  resource_group_config = {
+    create_resource_group = {
+      name     = "enterprise-ai-stack"
+      location = "East US"
+    }
+  }
 
-#   domain_config = {
-#     auto_azure_dns_setup = true
-#     dns_zones = {
-#       default = { dns_zone = "az.enterprise-ai-stack.com" }
-#     }
-#   }
+  domain_config = {
+    auto_azure_dns_setup = true
+    dns_zones = {
+      default = { dns_zone = "az.enterprise-ai-stack.com" }
+    }
+  }
 
-#   langflow = {
-#     subdomain = "langflow"
-#   }
+  langflow = {
+    subdomain = "langflow"
+    managed_db = {
+      sku_name            = "B_Standard_B1ms"
+      deletion_protection = false
+    }
+  }
 
-#   assistants = {
-#     subdomain = "assistants"
-#     db = {
-#       deletion_protection = false
-#     }
-#   }
+  assistants = {
+    subdomain = "assistants"
+    managed_db = {
+      deletion_protection = false
+    }
+  }
 
-#   vector_dbs = [{
-#     name      = "my_db"
-#     keyspaces = ["main_keyspace", "other_keyspace"]
-#     deletion_protection = false
-#   }]
-# }
+  # vector_dbs = [{
+  #   name                = "my_db"
+  #   keyspaces           = ["main_keyspace", "other_keyspace"]
+  #   deletion_protection = false
+  # }]
+}

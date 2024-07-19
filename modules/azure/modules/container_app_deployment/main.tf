@@ -1,9 +1,5 @@
-locals {
-  service_name = "${var.container_info.name}-service"
-}
-
 resource "azurerm_container_app" "this" {
-  name = local.service_name
+  name = "${var.container_info.name}-service"
 
   container_app_environment_id = var.infrastructure.container_app_environment_id
   resource_group_name          = var.infrastructure.resource_group_name
@@ -23,7 +19,7 @@ resource "azurerm_container_app" "this" {
   template {
     container {
       name    = var.container_info.name
-      image   = var.container_info.image
+      image   = "${var.container_info.image}:${try(coalesce(var.config.deployment.image_version), "latest")}"
       cpu     = try(coalesce(var.config.containers.cpu), 1)
       memory  = try(coalesce(var.config.containers.memory), "2Gi")
       command = var.container_info.entrypoint
@@ -36,17 +32,17 @@ resource "azurerm_container_app" "this" {
       }
 
       dynamic "env" {
-        for_each = coalesce(var.container_info.env, {})
+        for_each = try(coalesce(var.config.containers.env), {})
 
         content {
-          name  = env.value.name
-          value = env.value.value
+          name  = env.key
+          value = env.value
         }
       }
     }
 
-    min_replicas = try(coalesce(var.config.containers.min_instances), 0)
-    max_replicas = try(coalesce(var.config.containers.max_instances), 20)
+    min_replicas = try(coalesce(var.config.deployment.min_instances), 0)
+    max_replicas = try(coalesce(var.config.deployment.max_instances), 20)
   }
 
   lifecycle {
@@ -64,4 +60,8 @@ output "id" {
 
 output "domain_verification_id" {
   value = azurerm_container_app.this.custom_domain_verification_id
+}
+
+output "outbound_ip" {
+  value = azurerm_container_app.this.outbound_ip_addresses
 }

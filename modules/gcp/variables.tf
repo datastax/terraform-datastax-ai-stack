@@ -157,7 +157,7 @@ variable "langflow" {
     }))
     managed_db = optional(object({
       tier                = string
-      region              = optional(bool)
+      region              = optional(string)
       deletion_protection = optional(bool)
       initial_storage     = optional(number)
       max_storage         = optional(number)

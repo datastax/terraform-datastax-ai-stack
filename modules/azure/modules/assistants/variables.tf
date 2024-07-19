@@ -1,19 +1,22 @@
 variable "config" {
   type = object({
-    version = optional(string)
-    env     = optional(map(string))
-    db = object({
+    containers = optional(object({
+      env    = optional(map(string))
+      cpu    = optional(number)
+      memory = optional(string)
+    }))
+    deployment = optional(object({
+      image_version = optional(string)
+      min_instances = optional(number)
+      max_instances = optional(number)
+    }))
+    managed_db = object({
       regions             = optional(set(string))
       deletion_protection = optional(bool)
       cloud_provider      = optional(string)
     })
-    containers = optional(object({
-      cpu           = optional(number)
-      memory        = optional(string)
-      min_instances = optional(number)
-      max_instances = optional(number)
-    }))
   })
+  nullable = false
 }
 
 variable "infrastructure" {
@@ -23,4 +26,5 @@ variable "infrastructure" {
     resource_group_id            = string
     cloud_provider               = string
   })
+  nullable = false
 }

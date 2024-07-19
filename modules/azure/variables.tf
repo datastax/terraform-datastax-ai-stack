@@ -59,20 +59,22 @@ variable "domain_config" {
 
 variable "assistants" {
   type = object({
-    version   = optional(string)
     subdomain = optional(string)
-    env       = optional(map(string))
-    db = optional(object({
-      regions             = optional(set(string))
-      deletion_protection = optional(bool)
-      cloud_provider      = optional(string)
-    }))
     containers = optional(object({
-      cpu           = optional(number)
-      memory        = optional(string)
+      env    = optional(map(string))
+      cpu    = optional(number)
+      memory = optional(string)
+    }))
+    deployment = optional(object({
+      image_version = optional(string)
       min_instances = optional(number)
       max_instances = optional(number)
     }))
+    managed_db = object({
+      regions             = optional(set(string))
+      deletion_protection = optional(bool)
+      cloud_provider      = optional(string)
+    })
   })
   default = null
 
@@ -100,14 +102,21 @@ variable "assistants" {
 
 variable "langflow" {
   type = object({
-    version   = optional(string)
     subdomain = optional(string)
-    env       = optional(map(string))
     containers = optional(object({
-      cpu           = optional(number)
-      memory        = optional(string)
+      env    = optional(map(string))
+      cpu    = optional(number)
+      memory = optional(string)
+    }))
+    deployment = optional(object({
+      image_version = optional(string)
       min_instances = optional(number)
       max_instances = optional(number)
+    }))
+    managed_db = optional(object({
+      sku_name    = string
+      location    = optional(string)
+      max_storage = optional(number)
     }))
   })
   default = null

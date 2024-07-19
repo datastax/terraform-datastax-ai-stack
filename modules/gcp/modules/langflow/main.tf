@@ -12,12 +12,14 @@ locals {
   using_managed_db = var.config.managed_db != null
 
   postgres_url = (local.using_managed_db
-    ? "postgres://admin:${random_string.admin_password[0].result}@/${google_sql_database.this[0].name}?host=/cloudsql/${google_sql_database_instance.this[0].connection_name}"
+    ? "postgres://psqladmin:${random_string.admin_password[0].result}@/${google_sql_database.this[0].name}?host=/cloudsql/${google_sql_database_instance.this[0].connection_name}"
     : null
   )
 
   merged_env = (try(var.config.containers.env["LANGFLOW_DATABASE_URL"], null) == null && local.postgres_url != null
-    ? merge({ LANGFLOW_DATABASE_URL = local.postgres_url }, { for k, v in try(coalesce(var.config.containers.env), {}) : k => v if k != "LANGFLOW_DATABASE_URL" })
+    ? merge({ LANGFLOW_DATABASE_URL = local.postgres_url }, {
+      for k, v in try(coalesce(var.config.containers.env), {}) : k => v if k != "LANGFLOW_DATABASE_URL"
+    })
     : try(coalesce(var.config.containers.env), {})
   )
 
@@ -80,7 +82,7 @@ resource "random_string" "admin_password" {
 resource "google_sql_user" "admin" {
   count = local.using_managed_db ? 1 : 0
 
-  name     = "root"
+  name     = "psqladmin"
   instance = google_sql_database_instance.this[0].name
   password = random_string.admin_password[0].result
   project  = var.infrastructure.project_id

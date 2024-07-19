@@ -3,21 +3,26 @@ variable "container_info" {
     name        = string
     image       = string
     port        = number
-    env         = map(string)
     entrypoint  = optional(list(string))
     health_path = string
   })
+  nullable = false
 }
 
 variable "config" {
   type = object({
     containers = optional(object({
-      cpu           = optional(number)
-      memory        = optional(string)
+      env    = optional(map(string))
+      cpu    = optional(number)
+      memory = optional(string)
+    }))
+    deployment = optional(object({
+      image_version = optional(string)
       min_instances = optional(number)
       max_instances = optional(number)
     }))
   })
+  nullable = false
 }
 
 variable "infrastructure" {
@@ -26,4 +31,5 @@ variable "infrastructure" {
     resource_group_name          = string
     resource_group_id            = string
   })
+  nullable = false
 }

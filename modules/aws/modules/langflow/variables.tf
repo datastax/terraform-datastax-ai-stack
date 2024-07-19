@@ -26,7 +26,8 @@ variable "infrastructure" {
   type = object({
     cluster         = string
     security_groups = set(string)
-    subnets         = set(string)
+    private_subnets = set(string)
+    public_subnets  = set(string)
     cloud_provider  = string
   })
   nullable = false
