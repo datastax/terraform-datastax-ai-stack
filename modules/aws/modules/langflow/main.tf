@@ -21,7 +21,7 @@ locals {
   )
 
   merged_containers = merge(try(coalesce(var.config.containers), {}), { env = local.merged_env })
-  merged_config     = merge(try(coalesce(var.config), {}), { containers = local.merged_containers })
+  merged_config = merge(try(coalesce(var.config), {}), { containers = local.merged_containers })
 }
 
 output "container_info" {
@@ -33,7 +33,7 @@ output "target_id" {
 }
 
 module "ecs_deployment" {
-  source         = "../ecs_deployment"
+  source           = "../ecs_deployment"
   infrastructure = var.infrastructure
   #   config           = local.merged_config
   config           = var.config
@@ -60,8 +60,8 @@ resource "aws_db_instance" "this" {
 
   identifier                = "langflow-managed-db"
   instance_class            = var.config.managed_db.instance_class
-  allocated_storage         = try(coalesce(var.config.managed_db.initial_storage), 10)
-  max_allocated_storage     = try(coalesce(var.config.managed_db.max_storage), 10)
+  allocated_storage = try(coalesce(var.config.managed_db.initial_storage), 10)
+  max_allocated_storage = try(coalesce(var.config.managed_db.max_storage), 10)
   engine                    = "postgres"
   engine_version            = "16"
   username                  = "root"
@@ -70,5 +70,5 @@ resource "aws_db_instance" "this" {
   vpc_security_group_ids    = var.infrastructure.security_groups
   deletion_protection       = var.config.managed_db.deletion_protection
   availability_zone         = var.config.managed_db.availability_zone
-  final_snapshot_identifier = "langflow-managed-db-snap"
+  final_snapshot_identifier = "langflow-managed-db-snap-${timestamp()}"
 }
