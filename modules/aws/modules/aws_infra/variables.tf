@@ -16,19 +16,6 @@ variable "alb_config" {
     private_subnets = list(string)
     security_groups = list(string)
   })
-  nullable = true
-}
-
-variable "fargate_config" {
-  type = object({
-    capacity_provider_weights = optional(object({
-      default_base   = number
-      default_weight = number
-      spot_base      = number
-      spot_weight    = number
-    }))
-  })
-  nullable = true
 }
 
 variable "components" {
@@ -38,4 +25,18 @@ variable "components" {
     port        = number
     domain      = optional(string)
   }))
+}
+
+variable "deployment_defaults" {
+  type = object({
+    availability_zones = optional(list(string))
+    capacity_provider_weights = optional(object({
+      default_base   = number
+      default_weight = number
+      spot_base      = number
+      spot_weight    = number
+    }))
+  })
+  nullable = false
+  default  = {}
 }

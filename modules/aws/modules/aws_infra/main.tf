@@ -17,7 +17,7 @@ module "vpc" {
     Project = "datastax"
   }
 
-  azs                = slice(data.aws_availability_zones.available.names, 0, 2)
+  azs                = try(coalesce(var.deployment_defaults.availability_zones), slice(data.aws_availability_zones.available.names, 0, 2))
   cidr               = "10.0.0.0/16"
   create_igw         = true
   enable_nat_gateway = true
@@ -129,14 +129,14 @@ module "ecs" {
   fargate_capacity_providers = {
     FARGATE = {
       default_capacity_provider_strategy = {
-        base   = try(coalesce(var.fargate_config.capacity_provider_weights.default_base), 20)
-        weight = try(coalesce(var.fargate_config.capacity_provider_weights.default_weight), 0)
+        base   = try(coalesce(var.deployment_defaults.capacity_provider_weights.default_base), 20)
+        weight = try(coalesce(var.deployment_defaults.capacity_provider_weights.default_weight), 0)
       }
     }
     FARGATE_SPOT = {
       default_capacity_provider_strategy = {
-        base   = try(coalesce(var.fargate_config.capacity_provider_weights.spot_base), 0)
-        weight = try(coalesce(var.fargate_config.capacity_provider_weights.default_weight), 80)
+        base   = try(coalesce(var.deployment_defaults.capacity_provider_weights.spot_base), 0)
+        weight = try(coalesce(var.deployment_defaults.capacity_provider_weights.default_weight), 80)
       }
     }
   }

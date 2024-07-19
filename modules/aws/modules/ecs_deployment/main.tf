@@ -30,7 +30,7 @@ data "aws_iam_policy_document" "execute_command_policy" {
 }
 
 resource "aws_iam_role" "ecs_execution_role" {
-  name_prefix        = "ecs_execution_role"
+  name_prefix        = "${var.container_info.name}-ecs-exec-role"
   assume_role_policy = data.aws_iam_policy_document.ecs_assume_role_policy.json
 }
 
@@ -42,7 +42,7 @@ resource "aws_iam_role_policy_attachment" "ssm_core" {
 resource "aws_ecs_task_definition" "this" {
   container_definitions = jsonencode([
     {
-      image        = var.container_info.image,
+      image        = "${var.container_info.image}:${try(coalesce(var.config.deployment.image_version), "latest")}",
       name         = var.container_info.name,
       portMappings = [{ containerPort = var.container_info.port }],
       healthCheck = {
@@ -54,7 +54,7 @@ resource "aws_ecs_task_definition" "this" {
       environment = concat([
         { name = "ECS_ENABLE_CONTAINER_METADATA", value = "true" }
         ], [
-        for key, value in coalesce(var.container_info.env, {}) : {
+        for key, value in try(coalesce(var.config.containers.env), {}) : {
           name  = key
           value = value
         }
@@ -76,7 +76,7 @@ resource "aws_ecs_service" "this" {
   task_definition = aws_ecs_task_definition.this.arn
   name            = var.container_info.name
   launch_type     = "FARGATE"
-  desired_count   = try(var.config.containers.desired_count, 1)
+  desired_count   = 1
 
   enable_execute_command = true
 
@@ -93,8 +93,8 @@ resource "aws_ecs_service" "this" {
 }
 
 resource "aws_appautoscaling_target" "this" {
-  min_capacity       = try(coalesce(var.config.min_instances), 1)
-  max_capacity       = try(coalesce(var.config.max_instances), 20)
+  min_capacity       = try(coalesce(var.config.deployment.min_instances), 1)
+  max_capacity       = try(coalesce(var.config.deployment.max_instances), 20)
   resource_id        = "service/${var.infrastructure.cluster}/${aws_ecs_service.this.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"

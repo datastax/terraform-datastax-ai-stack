@@ -17,6 +17,8 @@ variable "config" {
       tier                = string
       region              = optional(bool)
       deletion_protection = optional(bool)
+      initial_storage     = optional(number)
+      max_storage         = optional(number)
     }))
   })
   nullable = false

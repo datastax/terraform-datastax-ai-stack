@@ -2,9 +2,7 @@ locals {
   create_assistants = var.assistants != null
   create_langflow   = var.langflow != null
 
-  deployment_defaults = {
-    deployment = merge({ location = try(module.gcp_infra[0].location, null) }, { for k, v in var.deployment_defaults : k => v if v != null })
-  }
+  deployment_defaults = merge({ location = try(module.gcp_infra[0].location, null) }, { for k, v in var.deployment_defaults : k => v if v != null })
 
   infrastructure = {
     project_id     = try(module.gcp_infra[0].project_id, null)
@@ -41,17 +39,25 @@ module "gcp_infra" {
 }
 
 module "assistants" {
-  source         = "./modules/assistants"
-  count          = local.create_assistants ? 1 : 0
-  config         = merge(var.assistants, local.deployment_defaults)
+  source = "./modules/assistants"
+  count  = local.create_assistants ? 1 : 0
+
   infrastructure = local.infrastructure
+
+  config = merge(var.assistants, {
+    deployment = merge(var.deployment_defaults, { for k, v in coalesce(var.assistants.deployment, {}) : k => v if v != null })
+  })
 }
 
 module "langflow" {
-  source         = "./modules/langflow"
-  count          = local.create_langflow ? 1 : 0
-  config         = merge(var.langflow, local.deployment_defaults)
+  source = "./modules/langflow"
+  count  = local.create_langflow ? 1 : 0
+
   infrastructure = local.infrastructure
+
+  config = merge(var.langflow, {
+    deployment = merge(var.deployment_defaults, { for k, v in coalesce(var.langflow.deployment, {}) : k => v if v != null })
+  })
 }
 
 module "vector_dbs" {

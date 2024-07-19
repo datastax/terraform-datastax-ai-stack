@@ -23,7 +23,8 @@ resource "aws_instance" "chat_ui_vm" {
   availability_zone = var.chat_ui.vm_config.region_or_zone
 
   tags = {
-    Name = "chat-ui-instance"
+    Project = "datastax"
+    Name    = "chat-ui-instance"
   }
 
   user_data = local.chat_ui_user_data_script

@@ -51,43 +51,56 @@ variable "infrastructure" {
   EOF
 }
 
-variable "fargate_config" {
+variable "deployment_defaults" {
   type = object({
+    availability_zones = optional(list(string))
     capacity_provider_weights = optional(object({
       default_base   = number
       default_weight = number
       spot_base      = number
       spot_weight    = number
     }))
+    min_instances = optional(number)
+    max_instances = optional(number)
   })
-  default = null
-
-  description = <<EOF
-    Sets global options for the ECS Fargate instances.
-
-    capacity_provider_weights: The weights to assign to the capacity providers. If not set, it's a 20/80 split between Fargate and Fargate Spot.
-      default_base: The base number of tasks to run on Fargate.
-      default_weight: The relative weight for Fargate when scaling tasks.
-      spot_base: The base number of tasks to run on Fargate Spot.
-      spot_weight: The relative weight for Fargate Spot when scaling tasks.
-  EOF
+  nullable = false
+  default  = {}
 }
+
+# variable "fargate_config" {
+#   type = object({
+#
+#   })
+#   default = null
+#
+#   description = <<EOF
+#     Sets global options for the ECS Fargate instances.
+#
+#     capacity_provider_weights: The weights to assign to the capacity providers. If not set, it's a 20/80 split between Fargate and Fargate Spot.
+#       default_base: The base number of tasks to run on Fargate.
+#       default_weight: The relative weight for Fargate when scaling tasks.
+#       spot_base: The base number of tasks to run on Fargate Spot.
+#       spot_weight: The relative weight for Fargate Spot when scaling tasks.
+#   EOF
+# }
 
 variable "assistants" {
   type = object({
-    version = optional(string)
-    domain  = string
-    env     = optional(map(string))
-    db = optional(object({
+    domain = optional(string)
+    containers = optional(object({
+      env    = optional(map(string))
+      cpu    = optional(number)
+      memory = optional(number)
+    }))
+    deployment = optional(object({
+      image_version = optional(string)
+      min_instances = optional(number)
+      max_instances = optional(number)
+    }))
+    managed_db = optional(object({
       regions             = optional(set(string))
       deletion_protection = optional(bool)
       cloud_provider      = optional(string)
-    }))
-    containers = optional(object({
-      cpu           = optional(number)
-      memory        = optional(number)
-      min_instances = optional(number)
-      max_instances = optional(number)
     }))
   })
   default = null
@@ -116,14 +129,23 @@ variable "assistants" {
 
 variable "langflow" {
   type = object({
-    version = optional(string)
-    domain  = string
-    env     = optional(map(string))
+    domain = optional(string)
     containers = optional(object({
-      cpu           = optional(number)
-      memory        = optional(number)
+      env    = optional(map(string))
+      cpu    = optional(number)
+      memory = optional(number)
+    }))
+    deployment = optional(object({
+      image_version = optional(string)
       min_instances = optional(number)
       max_instances = optional(number)
+    }))
+    managed_db = optional(object({
+      instance_class      = string
+      availability_zone   = optional(string)
+      deletion_protection = optional(bool)
+      initial_storage     = optional(number)
+      max_storage         = optional(number)
     }))
   })
   default = null

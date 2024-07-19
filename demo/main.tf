@@ -1,59 +1,24 @@
-# module "datastax-ai-stack-aws" {
-#   source = "../aws"
-
-#   domain_config = {
-#     auto_route53_setup = true
-#     hosted_zones = {
-#       default = { zone_name = "enterprise-ai-stack.com" }
-#     }
-#   }
-
-#   langflow = {
-#     domain = "langflow.enterprise-ai-stack.com"
-#   }
-
-#   assistants = {
-#     domain = "assistants.enterprise-ai-stack.com"
-#     db = {
-#       deletion_protection = false
-#     }
-#   }
-
-#   vector_dbs = [{
-#     name      = "my_db"
-#     keyspaces = ["main_keyspace", "other_keyspace"]
-#     deletion_protection = false
-#   }]
-# }
-
-module "datastax-ai-stack-gcp" {
-  source = "../modules/gcp"
-
-  project_config = {
-    create_project = {
-      billing_account = var.billing_account
-    }
-  }
+module "datastax-ai-stack-aws" {
+  source = "../modules/aws"
 
   domain_config = {
-    auto_cloud_dns_setup = true
-    managed_zones = {
-      default = { dns_name = "gcp.enterprise-ai-stack.com." }
+    auto_route53_setup = true
+    hosted_zones = {
+      default = { zone_name = "enterprise-ai-stack.com" }
     }
   }
 
   langflow = {
-    domain = "langflow.gcp.enterprise-ai-stack.com"
+    domain = "langflow.enterprise-ai-stack.com"
     managed_db = {
-      tier = "db-f1-micro"
+      instance_class      = "db.t3.micro"
       deletion_protection = false
     }
   }
 
   assistants = {
-    # domain = "assistants.gcp.enterprise-ai-stack.com"
+    domain = "assistants.enterprise-ai-stack.com"
     managed_db = {
-      regions             = ["us-east1"]
       deletion_protection = false
     }
   }
@@ -64,6 +29,45 @@ module "datastax-ai-stack-gcp" {
   #   deletion_protection = false
   # }]
 }
+
+# module "datastax-ai-stack-gcp" {
+#   source = "../modules/gcp"
+
+#   project_config = {
+#     create_project = {
+#       billing_account = var.billing_account
+#     }
+#   }
+
+#   domain_config = {
+#     auto_cloud_dns_setup = true
+#     managed_zones = {
+#       default = { dns_name = "gcp.enterprise-ai-stack.com." }
+#     }
+#   }
+
+#   langflow = {
+#     domain = "langflow.gcp.enterprise-ai-stack.com"
+#     managed_db = {
+#       tier                = "db-f1-micro"
+#       deletion_protection = false
+#     }
+#   }
+
+#   assistants = {
+#     # domain = "assistants.gcp.enterprise-ai-stack.com"
+#     managed_db = {
+#       regions             = ["us-east1"]
+#       deletion_protection = false
+#     }
+#   }
+
+#   # vector_dbs = [{
+#   #   name      = "my_db"
+#   #   keyspaces = ["main_keyspace", "other_keyspace"]
+#   #   deletion_protection = false
+#   # }]
+# }
 
 # module "datastax-ai-stack-azure" {
 #   source = "../azure"

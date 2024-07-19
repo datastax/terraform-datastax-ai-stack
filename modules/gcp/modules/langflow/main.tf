@@ -18,7 +18,7 @@ locals {
 
   merged_env = (try(var.config.containers.env["LANGFLOW_DATABASE_URL"], null) == null && local.postgres_url != null
     ? merge({ LANGFLOW_DATABASE_URL = local.postgres_url }, { for k, v in try(coalesce(var.config.containers.env), {}) : k => v if k != "LANGFLOW_DATABASE_URL" })
-    : var.config.containers.env
+    : try(coalesce(var.config.containers.env), {})
   )
 
   merged_containers = merge(try(coalesce(var.config.containers), {}), { env = local.merged_env })
@@ -34,12 +34,10 @@ output "service_uri" {
 }
 
 module "cloud_run_deployment" {
-  source = "../cloud_run_deployment"
-
+  source         = "../cloud_run_deployment"
   container_info = local.container_info
   infrastructure = var.infrastructure
-
-  config = local.merged_config
+  config         = local.merged_config
 }
 
 resource "google_sql_database_instance" "this" {
@@ -58,6 +56,9 @@ resource "google_sql_database_instance" "this" {
     ip_configuration {
       ssl_mode = "ENCRYPTED_ONLY"
     }
+
+    disk_size             = try(coalesce(var.config.managed_db.initial_storage), 10)
+    disk_autoresize_limit = try(coalesce(var.config.managed_db.max_storage), 10)
   }
 }
 
@@ -79,7 +80,7 @@ resource "random_string" "admin_password" {
 resource "google_sql_user" "admin" {
   count = local.using_managed_db ? 1 : 0
 
-  name     = "admin"
+  name     = "root"
   instance = google_sql_database_instance.this[0].name
   password = random_string.admin_password[0].result
   project  = var.infrastructure.project_id

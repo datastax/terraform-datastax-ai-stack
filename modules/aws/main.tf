@@ -31,10 +31,10 @@ module "aws_infra" {
   source = "./modules/aws_infra"
   count  = local.aws_infra_checks_pass ? 1 : 0
 
-  alb_config     = var.infrastructure
-  domain_config  = var.domain_config
-  fargate_config = var.fargate_config
-  components     = local.components
+  alb_config          = var.infrastructure
+  domain_config       = var.domain_config
+  components          = local.components
+  deployment_defaults = var.deployment_defaults
 }
 
 module "assistants" {
@@ -43,7 +43,10 @@ module "assistants" {
 
   infrastructure   = local.infrastructure
   target_group_arn = module.aws_infra[0].target_groups[module.assistants[0].container_info.name].arn
-  config           = var.assistants
+
+  config = merge(var.assistants, {
+    deployment = merge(var.deployment_defaults, { for k, v in coalesce(var.assistants.deployment, {}) : k => v if v != null })
+  })
 }
 
 module "langflow" {
@@ -52,7 +55,10 @@ module "langflow" {
 
   infrastructure   = local.infrastructure
   target_group_arn = module.aws_infra[0].target_groups[module.langflow[0].container_info.name].arn
-  config           = var.langflow
+
+  config = merge(var.langflow, {
+    deployment = merge(var.deployment_defaults, { for k, v in coalesce(var.langflow.deployment, {}) : k => v if v != null })
+  })
 }
 
 module "vector_dbs" {
