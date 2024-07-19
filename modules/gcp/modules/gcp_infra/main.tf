@@ -20,7 +20,7 @@ module "project-factory" {
   name            = coalesce(var.project_config.create_project.name, "dtsx-${random_id.proj_name.hex}")
   org_id          = var.project_config.create_project.org_id
   billing_account = var.project_config.create_project.billing_account
-  activate_apis   = compact(["run.googleapis.com", local.auto_cloud_dns_setup ? "dns.googleapis.com" : null])
+  activate_apis   = compact(["run.googleapis.com", local.auto_cloud_dns_setup ? "dns.googleapis.com" : null, "sqladmin.googleapis.com"])
 }
 
 resource "random_id" "url_map" {

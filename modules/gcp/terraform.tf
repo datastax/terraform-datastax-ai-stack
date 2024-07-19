@@ -1,6 +1,6 @@
 terraform {
   required_version = ">= 1.0"
-  
+
   required_providers {
     astra = {
       source  = "datastax/astra"
@@ -8,7 +8,7 @@ terraform {
     }
     google = {
       source  = "hashicorp/google"
-      version = ">= 5.0.0"
+      version = ">= 5.12.0"
     }
   }
 }
