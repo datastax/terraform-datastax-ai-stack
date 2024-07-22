@@ -11,7 +11,7 @@ variable "config" {
       min_instances = optional(number)
       max_instances = optional(number)
     }))
-    managed_db = optional(object({
+    astra_db = optional(object({
       regions             = optional(set(string))
       deletion_protection = optional(bool)
       cloud_provider      = optional(string)

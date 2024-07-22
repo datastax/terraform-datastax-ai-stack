@@ -5,9 +5,9 @@ module "assistants_api_db" {
   config = {
     name                = "assistant_api_db"
     keyspaces           = ["assistant_api"]
-    regions             = try(coalesce(var.config.managed_db.regions), null)
-    deletion_protection = try(coalesce(var.config.managed_db.deletion_protection), null)
-    cloud_provider      = try(coalesce(var.config.managed_db.cloud_provider), null)
+    regions             = try(coalesce(var.config.astra_db.regions), null)
+    deletion_protection = try(coalesce(var.config.astra_db.deletion_protection), null)
+    cloud_provider      = try(coalesce(var.config.astra_db.cloud_provider), null)
   }
 }
 

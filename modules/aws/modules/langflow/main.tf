@@ -6,7 +6,7 @@ locals {
     health_path = "health"
   }
 
-  using_managed_db = var.config.managed_db != null
+  using_managed_db = var.config.postgres_db != null
 
   postgres_url = (local.using_managed_db
     ? "postgres://psqladmin:${random_string.admin_password[0].result}@${aws_db_instance.this[0].endpoint}/${aws_db_instance.this[0].db_name}"
@@ -74,17 +74,17 @@ resource "aws_db_instance" "this" {
   count = local.using_managed_db ? 1 : 0
 
   identifier                = "langflow-managed-db"
-  instance_class            = var.config.managed_db.instance_class
-  allocated_storage         = try(coalesce(var.config.managed_db.initial_storage), 10)
-  max_allocated_storage     = try(coalesce(var.config.managed_db.max_storage), 10)
+  instance_class            = var.config.postgres_db.instance_class
+  allocated_storage         = try(coalesce(var.config.postgres_db.initial_storage), 10)
+  max_allocated_storage     = try(coalesce(var.config.postgres_db.max_storage), 10)
   engine                    = "postgres"
   engine_version            = "16"
   username                  = "psqladmin"
   password                  = random_string.admin_password[0].result
   db_subnet_group_name      = aws_db_subnet_group.db_subnet[0].name
   vpc_security_group_ids    = var.infrastructure.security_groups
-  deletion_protection       = var.config.managed_db.deletion_protection
-  availability_zone         = var.config.managed_db.availability_zone
+  deletion_protection       = var.config.postgres_db.deletion_protection
+  availability_zone         = var.config.postgres_db.availability_zone
   final_snapshot_identifier = "langflow-managed-db-snap-${random_string.random_id[0].result}"
   db_name                   = "postgres"
   publicly_accessible       = true

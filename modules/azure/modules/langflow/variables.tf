@@ -10,7 +10,7 @@ variable "config" {
       min_instances = optional(number)
       max_instances = optional(number)
     }))
-    managed_db = optional(object({
+    postgres_db = optional(object({
       sku_name    = string
       location    = optional(string)
       max_storage = optional(number)

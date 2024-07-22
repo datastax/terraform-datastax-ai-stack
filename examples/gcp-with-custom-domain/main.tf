@@ -18,13 +18,13 @@ module "datastax-ai-stack-gcp" {
   domain_config = {
     auto_cloud_dns_setup = true
     managed_zones = {
-      default = { dns_name = var.dns_name }
+      default = { dns_name = "${var.dns_name}." }
     }
   }
 
   langflow = {
     domain = "langflow.${var.dns_name}"
-    # managed_db = {
+    # postgres_db = {
     #   tier                = "db-f1-micro"
     #   deletion_protection = false
     # }
@@ -32,7 +32,7 @@ module "datastax-ai-stack-gcp" {
 
   # assistants = {
   #   domain = "assistants.${var.dns_name}"
-  #   managed_db = {
+  #   astra_db = {
   #     deletion_protection = false
   #   }
   # }

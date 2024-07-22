@@ -9,7 +9,7 @@ locals {
     csql_instance = try(google_sql_database_instance.this[0].connection_name, null)
   }
 
-  using_managed_db = var.config.managed_db != null
+  using_managed_db = var.config.postgres_db != null
 
   postgres_url = (local.using_managed_db
     ? "postgres://psqladmin:${random_string.admin_password[0].result}@/${google_sql_database.this[0].name}?host=/cloudsql/${google_sql_database_instance.this[0].connection_name}"
@@ -50,18 +50,18 @@ resource "google_sql_database_instance" "this" {
   database_version = "POSTGRES_16"
   project          = var.infrastructure.project_id
 
-  region              = var.config.managed_db.region
-  deletion_protection = var.config.managed_db.deletion_protection
+  region              = var.config.postgres_db.region
+  deletion_protection = var.config.postgres_db.deletion_protection
 
   settings {
-    tier = var.config.managed_db.tier
+    tier = var.config.postgres_db.tier
 
     ip_configuration {
       ssl_mode = "ENCRYPTED_ONLY"
     }
 
-    disk_size             = try(coalesce(var.config.managed_db.initial_storage), 10)
-    disk_autoresize_limit = try(coalesce(var.config.managed_db.max_storage), 10)
+    disk_size             = try(coalesce(var.config.postgres_db.initial_storage), 10)
+    disk_autoresize_limit = try(coalesce(var.config.postgres_db.max_storage), 10)
   }
 }
 

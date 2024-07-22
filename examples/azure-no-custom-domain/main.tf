@@ -21,13 +21,13 @@ module "datastax-ai-stack-azure" {
   }
 
   langflow = {
-    managed_db = {
+    postgres_db = {
       sku_name            = "B_Standard_B1ms"
     }
   }
 
   assistants = {
-    managed_db = {
+    astra_db = {
       deletion_protection = false
     }
   }

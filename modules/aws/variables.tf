@@ -97,7 +97,7 @@ variable "assistants" {
       min_instances = optional(number)
       max_instances = optional(number)
     }))
-    managed_db = optional(object({
+    astra_db = optional(object({
       regions             = optional(set(string))
       deletion_protection = optional(bool)
       cloud_provider      = optional(string)
@@ -140,7 +140,7 @@ variable "langflow" {
       min_instances = optional(number)
       max_instances = optional(number)
     }))
-    managed_db = optional(object({
+    postgres_db = optional(object({
       instance_class      = string
       availability_zone   = optional(string)
       deletion_protection = optional(bool)

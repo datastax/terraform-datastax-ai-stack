@@ -25,14 +25,14 @@ module "datastax-ai-stack-azure" {
 
   langflow = {
     subdomain = "langflow"
-    managed_db = {
+    postgres_db = {
       sku_name            = "B_Standard_B1ms"
     }
   }
 
   assistants = {
     subdomain = "assistants"
-    managed_db = {
+    astra_db = {
       deletion_protection = false
     }
   }

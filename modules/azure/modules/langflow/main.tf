@@ -6,7 +6,7 @@ locals {
     health_path = "/health"
   }
 
-  using_managed_db = var.config.managed_db != null
+  using_managed_db = var.config.postgres_db != null
 
   postgres_url = (local.using_managed_db
     ? "postgresql://psqladmin:${random_string.admin_password[0].result}@${azurerm_postgresql_flexible_server.this[0].fqdn}:5432/postgres"
@@ -58,15 +58,15 @@ resource "azurerm_postgresql_flexible_server" "this" {
   count = local.using_managed_db != false ? 1 : 0
 
   name                = "langflow-managed-db"
-  location            = coalesce(var.config.managed_db.location, var.infrastructure.resource_group_location)
+  location            = coalesce(var.config.postgres_db.location, var.infrastructure.resource_group_location)
   resource_group_name = var.infrastructure.resource_group_name
 
   administrator_login    = "psqladmin"
   administrator_password = random_string.admin_password[0].result
 
-  sku_name   = var.config.managed_db.sku_name
+  sku_name   = var.config.postgres_db.sku_name
   version    = "16"
-  storage_mb = var.config.managed_db.max_storage
+  storage_mb = var.config.postgres_db.max_storage
 
   backup_retention_days = 7
   auto_grow_enabled     = true

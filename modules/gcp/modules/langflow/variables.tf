@@ -13,7 +13,7 @@ variable "config" {
       service_account = optional(string)
       location        = string
     }))
-    managed_db = optional(object({
+    postgres_db = optional(object({
       tier                = string
       region              = optional(string)
       deletion_protection = optional(bool)

@@ -20,14 +20,14 @@ module "datastax-ai-stack-gcp" {
   }
 
   langflow = {
-    managed_db = {
+    postgres_db = {
       tier                = "db-f1-micro"
       deletion_protection = false
     }
   }
 
   assistants = {
-    managed_db = {
+    astra_db = {
       deletion_protection = false
     }
   }

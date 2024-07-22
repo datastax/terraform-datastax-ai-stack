@@ -19,7 +19,7 @@ module "datastax-ai-stack-aws" {
 
   langflow = {
     domain = "langflow.${var.dns_zone_name}"
-    managed_db = {
+    postgres_db = {
       instance_class      = "db.t3.micro"
       deletion_protection = false
     }
@@ -27,7 +27,7 @@ module "datastax-ai-stack-aws" {
 
   assistants = {
     domain = "assistants.${var.dns_zone_name}"
-    managed_db = {
+    astra_db = {
       deletion_protection = false
     }
   }

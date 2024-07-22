@@ -10,7 +10,7 @@
 
 #   langflow = {
 #     domain = "langflow.enterprise-ai-stack.com"
-#     managed_db = {
+#     postgres_db = {
 #       instance_class      = "db.t3.micro"
 #       deletion_protection = false
 #     }
@@ -18,7 +18,7 @@
 
 #   # assistants = {
 #   #   domain = "assistants.enterprise-ai-stack.com"
-#   #   managed_db = {
+#   #   astra_db = {
 #   #     deletion_protection = false
 #   #   }
 #   # }
@@ -41,14 +41,14 @@
 
 #   domain_config = {
 #     auto_cloud_dns_setup = true
-#     managed_zones = {
+#     astra_zones = {
 #       default = { dns_name = "gcp.enterprise-ai-stack.com." }
 #     }
 #   }
 
 #   langflow = {
 #     domain = "langflow.gcp.enterprise-ai-stack.com"
-#     managed_db = {
+#     postgres_db = {
 #       tier                = "db-f1-micro"
 #       deletion_protection = false
 #     }
@@ -56,7 +56,7 @@
 
 #   # assistants = {
 #   #   # domain = "assistants.gcp.enterprise-ai-stack.com"
-#   #   managed_db = {
+#   #   astra_db = {
 #   #     regions             = ["us-east1"]
 #   #     deletion_protection = false
 #   #   }
@@ -88,14 +88,14 @@ module "datastax-ai-stack-azure" {
 
   langflow = {
     subdomain = "langflow"
-    managed_db = {
+    postgres_db = {
       sku_name            = "B_Standard_B1ms"
     }
   }
 
   # assistants = {
   #   subdomain = "assistants"
-  #   managed_db = {
+  #   astra_db = {
   #     deletion_protection = false
   #   }
   # }
