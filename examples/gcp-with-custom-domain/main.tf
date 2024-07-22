@@ -24,22 +24,22 @@ module "datastax-ai-stack-gcp" {
 
   langflow = {
     domain = "langflow.${var.dns_name}"
-    # postgres_db = {
-    #   tier                = "db-f1-micro"
-    #   deletion_protection = false
-    # }
+    postgres_db = {
+      tier                = "db-f1-micro"
+      deletion_protection = false
+    }
   }
 
-  # assistants = {
-  #   domain = "assistants.${var.dns_name}"
-  #   astra_db = {
-  #     deletion_protection = false
-  #   }
-  # }
+  assistants = {
+    domain = "assistants.${var.dns_name}"
+    astra_db = {
+      deletion_protection = false
+    }
+  }
 
-  # vector_dbs = [{
-  #   name      = "my_db"
-  #   keyspaces = ["main_keyspace", "other_keyspace"]
-  #   deletion_protection = false
-  # }]
+  vector_dbs = [{
+    name      = "my_db"
+    keyspaces = ["main_keyspace", "other_keyspace"]
+    deletion_protection = false
+  }]
 }
