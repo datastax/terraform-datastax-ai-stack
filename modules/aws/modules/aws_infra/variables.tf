@@ -29,7 +29,7 @@ variable "components" {
 
 variable "deployment_defaults" {
   type = object({
-    availability_zones = optional(list(string))
+    vpc_availability_zones = optional(list(string))
     capacity_provider_weights = optional(object({
       default_base   = number
       default_weight = number

@@ -42,7 +42,7 @@ variable "infrastructure" {
   default = null
 
   description = <<EOF
-    Required fields to attach the ALB and ECS instances to. If not set, a new VPC will be created w/ a default security group.
+    Required fields to attach the ALB and ECS instances to. If not set, a new VPC will be created with a default security group.
 
     vpc_id: The ID of the VPC to create the ALB in.
     public_subnets: A list of public subnet IDs to create the ALB in.
@@ -53,7 +53,7 @@ variable "infrastructure" {
 
 variable "deployment_defaults" {
   type = object({
-    availability_zones = optional(list(string))
+    vpc_availability_zones = optional(list(string))
     capacity_provider_weights = optional(object({
       default_base   = number
       default_weight = number
@@ -65,24 +65,23 @@ variable "deployment_defaults" {
   })
   nullable = false
   default  = {}
-}
 
-# variable "fargate_config" {
-#   type = object({
-#
-#   })
-#   default = null
-#
-#   description = <<EOF
-#     Sets global options for the ECS Fargate instances.
-#
-#     capacity_provider_weights: The weights to assign to the capacity providers. If not set, it's a 20/80 split between Fargate and Fargate Spot.
-#       default_base: The base number of tasks to run on Fargate.
-#       default_weight: The relative weight for Fargate when scaling tasks.
-#       spot_base: The base number of tasks to run on Fargate Spot.
-#       spot_weight: The relative weight for Fargate Spot when scaling tasks.
-#   EOF
-# }
+  description = <<EOF
+    Defaults for ECS deployments. Some fields may be overridable on a per-component basis.
+
+    vpc_availability_zones: Availability zones to be used if the VPC is auto-created by this module. Will not do anything if your own VPC is provided.
+
+    capacity_provider_weights: The weights to assign to the capacity providers. If not set, it's a 20/80 split between Fargate and Fargate Spot.
+      default_base: The base number of tasks to run on Fargate.
+      default_weight: The relative weight for Fargate when scaling tasks.
+      spot_base: The base number of tasks to run on Fargate Spot.
+      spot_weight: The relative weight for Fargate Spot when scaling tasks.
+
+    min_instances: The minimum number of instances to run. Defaults to 1. Must be >= 1.
+
+    max_instances: The maximum number of instances to run. Defaults to 20.
+  EOF
+}
 
 variable "assistants" {
   type = object({
@@ -108,22 +107,22 @@ variable "assistants" {
   description = <<EOF
     Options for the Astra Assistant API service.
 
-    version: The image version to use for the deployment; defaults to "latest".
-
     domain: The domain name to use for the service; used in the listener routing rules.
 
-    env: Environment variables to set for the service.
-
-    db: Options for the database Astra Assistants uses.
-      regions: The regions to deploy the database to. Defaults to the first available region.
-      deletion_protection: Whether to enable deletion protection on the database.
-      cloud_provider: The cloud provider to use for the database. Defaults to "gcp".
-
-    containers: Options for the ECS service.
+    containers:
+      env: Environment variables to set for the service.
       cpu: The amount of CPU to allocate to the service. Defaults to 1024.
       memory: The amount of memory to allocate to the service. Defaults to 2048 (Mi).
-      min_instances: The minimum number of instances to run. Defaults to 1.
-      max_instances: The maximum number of instances to run. Defaults to 100.
+
+    deployment:
+      image_version: The image version to use for the deployment; defaults to "latest".
+      min_instances: The minimum number of instances to run. Defaults to 1. Must be >= 1.
+      max_instances: The maximum number of instances to run. Defaults to 20.
+
+    astra_db: Options for the database Astra Assistants uses. Will be created even if this is not set.
+      regions: The regions to deploy the database to. Defaults to the first available region.
+      cloud_provider: The cloud provider to use for the database. Defaults to "gcp".
+      deletion_protection: The database can't be deleted when this value is set to true. The default is false.
   EOF
 }
 
@@ -153,17 +152,24 @@ variable "langflow" {
   description = <<EOF
     Options for the Langflow service.
 
-    version: The image version to use for the deployment; defaults to "latest".
-
     domain: The domain name to use for the service; used in the listener routing rules.
 
-    env: Environment variables to set for the service.
-
-    containers: Options for the ECS service.
+    containers:
+      env: Environment variables to set for the service.
       cpu: The amount of CPU to allocate to the service. Defaults to 1024.
       memory: The amount of memory to allocate to the service. Defaults to 2048 (Mi).
-      min_instances: The minimum number of instances to run. Defaults to 1.
-      max_instances: The maximum number of instances to run. Defaults to 100.
+
+    deployment:
+      image_version: The image version to use for the deployment; defaults to "latest".
+      min_instances: The minimum number of instances to run. Defaults to 1. Must be >= 1.
+      max_instances: The maximum number of instances to run. Defaults to 20.
+
+    postgres_db: Creates a basic Postgres instance to enable proper data persistence. Recommended to provide your own via the LANGFLOW_DATBASE_URL env var in production use cases. Will default to ephemeral SQLite instances if not set.
+      instance_class: Determines the computation and memory capacity of an Amazon RDS DB instance. https://aws.amazon.com/rds/instance-types/
+      availability_zone: The AZ for the RDS instance.
+      deletion_protection: The database can't be deleted when this value is set to true. The default is false.
+      initial_storage: The allocated storage in gibibytes. If max_storage is set, this argument represents the initial storage allocation, enabling storage autoscaling.
+      max_storage: When configured, the upper limit to which Amazon RDS can automatically scale the storage of the DB instance.
   EOF
 }
 
@@ -189,7 +195,7 @@ variable "vector_dbs" {
 
     cloud_provider: The cloud provider to use for the database. Defaults to "gcp".
 
-    deletion_protection: Whether to enable deletion protection on the database. Defaults to true.
+    deletion_protection: The database can't be deleted when this value is set to true. The default is false.
   EOF
 }
 

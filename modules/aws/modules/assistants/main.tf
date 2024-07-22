@@ -1,5 +1,6 @@
 module "assistants_api_db" {
   source         = "../astra_db"
+  
   cloud_provider = var.infrastructure.cloud_provider
 
   config = {

@@ -17,7 +17,7 @@ module "vpc" {
     Project = "datastax"
   }
 
-  azs                = try(coalesce(var.deployment_defaults.availability_zones), slice(data.aws_availability_zones.available.names, 0, 2))
+  azs                = try(coalesce(var.deployment_defaults.vpc_availability_zones), slice(data.aws_availability_zones.available.names, 0, 2))
   cidr               = "10.0.0.0/16"
   create_igw         = true
   enable_nat_gateway = true
