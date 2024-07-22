@@ -24,7 +24,7 @@ resource "astra_database" "astra_vector_db" {
   cloud_provider      = local.cloud_provider
   keyspace            = local.first_keyspace
   name                = var.config.name
-  deletion_protection = var.config.deletion_protection
+  deletion_protection = coalesce(var.config.deletion_protection, false)
   regions             = local.regions
   db_type             = "vector"
 }

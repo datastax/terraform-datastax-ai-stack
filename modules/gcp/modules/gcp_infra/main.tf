@@ -1,6 +1,6 @@
 locals {
   project_id = coalesce(var.project_config.project_id, try(module.project-factory[0].project_id, null))
-  location   = try(coalesce(var.cloud_run_config.location), data.google_cloud_run_locations.available.locations[0])
+  location   = try(coalesce(var.deployment_defaults.location), data.google_cloud_run_locations.available.locations[0])
 }
 
 data "google_cloud_run_locations" "available" {
@@ -20,7 +20,7 @@ module "project-factory" {
   name            = coalesce(var.project_config.create_project.name, "dtsx-${random_id.proj_name.hex}")
   org_id          = var.project_config.create_project.org_id
   billing_account = var.project_config.create_project.billing_account
-  activate_apis   = compact(["run.googleapis.com", local.auto_cloud_dns_setup ? "dns.googleapis.com" : null])
+  activate_apis   = compact(["run.googleapis.com", local.auto_cloud_dns_setup ? "dns.googleapis.com" : null, "sqladmin.googleapis.com"])
 }
 
 resource "random_id" "url_map" {

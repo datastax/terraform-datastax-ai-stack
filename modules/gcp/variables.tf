@@ -29,19 +29,6 @@ variable "project_config" {
   EOF
 }
 
-variable "cloud_run_config" {
-  type = object({
-    location = optional(string)
-  })
-  default = null
-
-  description = <<EOF
-    Sets global options for the Cloud Run services.
-
-    location: The location to deploy the Cloud Run services to. If not set, the first available location will be used.
-  EOF
-}
-
 variable "domain_config" {
   type = object({
     auto_cloud_dns_setup = bool
@@ -84,21 +71,44 @@ variable "domain_config" {
   EOF
 }
 
+variable "deployment_defaults" {
+  type = object({
+    min_instances   = optional(number)
+    max_instances   = optional(number)
+    location        = optional(string)
+  })
+  nullable = false
+  default  = {}
+
+  description = <<EOF
+    Defaults for ECS deployments. Some fields may be overridable on a per-component basis.
+
+    min_instances: The minimum number of instances to run. Defaults to 1. Must be >= 1.
+
+    max_instances: The maximum number of instances to run. Defaults to 20.
+
+    location: The location of the cloud run services.
+  EOF
+}
+
 variable "assistants" {
   type = object({
-    version = optional(string)
-    domain  = optional(string)
-    env     = optional(map(string))
-    db = optional(object({
+    domain = optional(string)
+    containers = optional(object({
+      env    = optional(map(string))
+      cpu    = optional(string)
+      memory = optional(string)
+    }))
+    deployment = optional(object({
+      image_version   = optional(string)
+      min_instances   = optional(number)
+      max_instances   = optional(number)
+      location        = optional(string)
+    }))
+    astra_db = optional(object({
       regions             = optional(set(string))
       deletion_protection = optional(bool)
       cloud_provider      = optional(string)
-    }))
-    containers = optional(object({
-      cpu           = optional(string)
-      memory        = optional(string)
-      min_instances = optional(number)
-      max_instances = optional(number)
     }))
   })
   default = null
@@ -106,35 +116,46 @@ variable "assistants" {
   description = <<EOF
     Options for the Astra Assistant API service.
 
-    version: The image version to use for the deployment; defaults to "latest".
+    domain: The domain name to use for the service; used in the listener routing rules.
 
-    domain: The domain name to use for the service; used in the URL mapping.
+    containers:
+      env: Environment variables to set for the service.
+      cpu: The amount of CPU to allocate to the service. Defaults to "1".
+      memory: The amount of memory to allocate to the service. Defaults to "2048Mi".
 
-    env: Environment variables to set for the service.
+    deployment:
+      image_version: The image version to use for the deployment; defaults to "latest".
+      min_instances: The minimum number of instances to run. Defaults to 1. Must be >= 1.
+      max_instances: The maximum number of instances to run. Defaults to 20.
+      location: The location of the cloud run service.
 
-    db: Options for the database Astra Assistants uses.
+    astra_db: Options for the database Astra Assistants uses. Will be created even if this is not set.
       regions: The regions to deploy the database to. Defaults to the first available region.
-      deletion_protection: Whether to enable deletion protection on the database.
       cloud_provider: The cloud provider to use for the database. Defaults to "gcp".
-
-    containers: Options for the Cloud Run service.
-      cpu: The amount of CPU to allocate to the service. Defaults to 1.
-      memory: The amount of memory to allocate to the service. Defaults to 2048Mi.
-      min_instances: The minimum number of instances to run. Defaults to 0.
-      max_instances: The maximum number of instances to run. Defaults to 100.
+      deletion_protection: The database can't be deleted when this value is set to true. The default is false.
   EOF
 }
 
 variable "langflow" {
   type = object({
-    version = optional(string)
-    domain  = optional(string)
-    env     = optional(map(string))
+    domain = optional(string)
     containers = optional(object({
-      cpu           = optional(string)
-      memory        = optional(string)
-      min_instances = optional(number)
-      max_instances = optional(number)
+      env    = optional(map(string))
+      cpu    = optional(string)
+      memory = optional(string)
+    }))
+    deployment = optional(object({
+      image_version   = optional(string)
+      min_instances   = optional(number)
+      max_instances   = optional(number)
+      location        = optional(string)
+    }))
+    postgres_db = optional(object({
+      tier                = string
+      region              = optional(string)
+      deletion_protection = optional(bool)
+      initial_storage     = optional(number)
+      max_storage         = optional(number)
     }))
   })
   default = null
@@ -142,17 +163,25 @@ variable "langflow" {
   description = <<EOF
     Options for the Langflow service.
 
-    version: The image version to use for the deployment; defaults to "latest".
+    domain: The domain name to use for the service; used in the listener routing rules.
 
-    domain: The domain name to use for the service; used in the URL mapping. 
+    containers:
+      env: Environment variables to set for the service.
+      cpu: The amount of CPU to allocate to the service. Defaults to 1024.
+      memory: The amount of memory to allocate to the service. Defaults to 2048 (Mi).
 
-    env: Environment variables to set for the service.
+    deployment:
+      image_version: The image version to use for the deployment; defaults to "latest".
+      min_instances: The minimum number of instances to run. Defaults to 1. Must be >= 1.
+      max_instances: The maximum number of instances to run. Defaults to 20.
+      location: The location of the cloud run service.
 
-    containers: Options for the Cloud Run service.
-      cpu: The amount of CPU to allocate to the service. Defaults to 1.
-      memory: The amount of memory to allocate to the service. Defaults to 2048Mi.
-      min_instances: The minimum number of instances to run. Defaults to 0.
-      max_instances: The maximum number of instances to run. Defaults to 100.
+    postgres_db: Creates a basic Postgres instance to enable proper data persistence. Recommended to provide your own via the LANGFLOW_DATBASE_URL env var in production use cases. Will default to ephemeral SQLite instances if not set.
+      tier: The machine type to use. https://cloud.google.com/sql/docs/mysql/admin-api/rest/v1beta4/tiers
+      region: The region for the db instance; defaults to the provider's region.
+      deletion_protection: The database can't be deleted when this value is set to true. The default is false.
+      initial_storage: The size of the data disk in GB. Must be >= 10GB.
+      max_storage:  The maximum size to which the storage capacity can be autoscaled. The default value is 0, which specifies that there is no limit.
   EOF
 }
 
@@ -178,6 +207,6 @@ variable "vector_dbs" {
 
     cloud_provider: The cloud provider to use for the database. Defaults to "gcp".
 
-    deletion_protection: Whether to enable deletion protection on the database. Defaults to true.
+    deletion_protection: The database can't be deleted when this value is set to true. The default is false.
   EOF
 }

@@ -6,6 +6,7 @@ locals {
     container_app_environment_id = try(module.azure_infra[0].container_app_environment_id, null)
     resource_group_name          = try(module.azure_infra[0].resource_group_name, null)
     resource_group_id            = try(module.azure_infra[0].resource_group_id, null)
+    resource_group_location      = try(module.azure_infra[0].resource_group_location, null)
     cloud_provider               = "gcp"
   }
 

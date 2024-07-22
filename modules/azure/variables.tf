@@ -57,57 +57,83 @@ variable "domain_config" {
   EOF
 }
 
+variable "deployment_defaults" {
+  type = object({
+    min_instances   = optional(number)
+    max_instances   = optional(number)
+  })
+  nullable = false
+  default  = {}
+
+  description = <<EOF
+    Defaults for container app deployments. Some fields may be overridable on a per-component basis.
+
+    min_instances: The minimum number of instances to run. Defaults to 1. Must be >= 1.
+
+    max_instances: The maximum number of instances to run. Defaults to 20.
+  EOF
+}
+
 variable "assistants" {
   type = object({
-    version   = optional(string)
     subdomain = optional(string)
-    env       = optional(map(string))
-    db = optional(object({
-      regions             = optional(set(string))
-      deletion_protection = optional(bool)
-      cloud_provider      = optional(string)
-    }))
     containers = optional(object({
-      cpu           = optional(number)
-      memory        = optional(string)
+      env    = optional(map(string))
+      cpu    = optional(number)
+      memory = optional(string)
+    }))
+    deployment = optional(object({
+      image_version = optional(string)
       min_instances = optional(number)
       max_instances = optional(number)
     }))
+    astra_db = object({
+      regions             = optional(set(string))
+      deletion_protection = optional(bool)
+      cloud_provider      = optional(string)
+    })
   })
   default = null
 
   description = <<EOF
     Options for the Astra Assistant API service.
 
-    version: The image version to use for the deployment; defaults to "latest".
-
     subdomain: The subdomain to use for the service, if `domain_config.auto_azure_dns_setup` is true. Should be null if `domain_config.auto_azure_dns_setup` is false.
 
-    env: Environment variables to set for the service.
+    containers:
+      env: Environment variables to set for the service.
+      cpu: The amount of CPU to allocate to the service. Defaults to 1024.
+      memory: The amount of memory to allocate to the service. Defaults to 2048 (Mi).
 
-    db: Options for the database Astra Assistants uses.
+    deployment:
+      image_version: The image version to use for the deployment; defaults to "latest".
+      min_instances: The minimum number of instances to run. Defaults to 1. Must be >= 1.
+      max_instances: The maximum number of instances to run. Defaults to 20.
+
+    astra_db: Options for the database Astra Assistants uses. Will be created even if this is not set.
       regions: The regions to deploy the database to. Defaults to the first available region.
-      deletion_protection: Whether to enable deletion protection on the database.
       cloud_provider: The cloud provider to use for the database. Defaults to "azure".
-
-    containers: Options for the Cloud Run service.
-      cpu: The amount of CPU to allocate to the service. Defaults to 1.
-      memory: The amount of memory to allocate to the service. Defaults to 2Gi.
-      min_instances: The minimum number of instances to run. Defaults to 0.
-      max_instances: The maximum number of instances to run. Defaults to 100.
+      deletion_protection: The database can't be deleted when this value is set to true. The default is false.
   EOF
 }
 
 variable "langflow" {
   type = object({
-    version   = optional(string)
     subdomain = optional(string)
-    env       = optional(map(string))
     containers = optional(object({
-      cpu           = optional(number)
-      memory        = optional(string)
+      env    = optional(map(string))
+      cpu    = optional(number)
+      memory = optional(string)
+    }))
+    deployment = optional(object({
+      image_version = optional(string)
       min_instances = optional(number)
       max_instances = optional(number)
+    }))
+    postgres_db = optional(object({
+      sku_name    = string
+      location    = optional(string)
+      max_storage = optional(number)
     }))
   })
   default = null
@@ -115,17 +141,22 @@ variable "langflow" {
   description = <<EOF
     Options for the Langflow service.
 
-    version: The image version to use for the deployment; defaults to "latest".
-
     subdomain: The subdomain to use for the service, if `domain_config.auto_azure_dns_setup` is true. Should be null if `domain_config.auto_azure_dns_setup` is false.
 
-    env: Environment variables to set for the service.
-
-    containers: Options for the Cloud Run service.
+    containers:
+      env: Environment variables to set for the service.
       cpu: The amount of CPU to allocate to the service. Defaults to 1.
-      memory: The amount of memory to allocate to the service. Defaults to 2Gi.
-      min_instances: The minimum number of instances to run. Defaults to 0.
-      max_instances: The maximum number of instances to run. Defaults to 100.
+      memory: The amount of memory to allocate to the service. Defaults to "2Gi".
+
+    deployment:
+      image_version: The image version to use for the deployment; defaults to "latest".
+      min_instances: The minimum number of instances to run. Defaults to 1. Must be >= 1.
+      max_instances: The maximum number of instances to run. Defaults to 20.
+
+    postgres_db: Creates a basic Postgres instance to enable proper data persistence. Recommended to provide your own via the LANGFLOW_DATBASE_URL env var in production use cases. Will default to ephemeral SQLite instances if not set.
+      sku_name: The SKU Name for the PostgreSQL Flexible Server. The name of the SKU follows the tier + name pattern (e.g. B_Standard_B1ms, GP_Standard_D2s_v3, MO_Standard_E4s_v3).
+      max_storage: The max storage (in MB). Possible values are 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4193280, 4194304, 8388608, 16777216 and 33553408. Defaults to 32768 (MB).
+      location: The Azure Region where the db instance should exist.
   EOF
 }
 
@@ -151,6 +182,6 @@ variable "vector_dbs" {
 
     cloud_provider: The cloud provider to use for the database. Defaults to "azure".
 
-    deletion_protection: Whether to enable deletion protection on the database. Defaults to true.
+    deletion_protection: The database can't be deleted when this value is set to true. The default is false.
   EOF
 }

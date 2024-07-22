@@ -19,36 +19,35 @@ To allow the module to configure necessary any DNS settings, you'll also need to
 
 ```hcl
 module "datastax-ai-stack-aws" {
-  source  = "datastax/ai-stack/astra//modules/aws"
-  version = "1.0.0-beta.1"
+  source = "datastax/ai-stack/astra//modules/aws"
 
   domain_config = {
     auto_route53_setup = true
     hosted_zones = {
-      default = { zone_name = var.domain }
+      default = { zone_name = var.dns_zone_name }
     }
   }
 
   langflow = {
-    domain = "langflow.${var.domain}"
-    env = {
-      LANGFLOW_DATABASE_URL = var.langflow_db_url
-    }
-  }
-
-  assistants = {
-    domain = "assistants.${var.domain}"
-    db = {
+    domain = "langflow.${var.dns_zone_name}"
+    postgres_db = {
+      instance_class      = "db.t3.micro"
       deletion_protection = false
     }
   }
 
-  vector_dbs = [
-    {
-      name      = "my_vector_db"
-      keyspaces = ["my_keyspace1", "my_keyspace2"]
+  assistants = {
+    domain = "assistants.${var.dns_zone_name}"
+    astra_db = {
+      deletion_protection = false
     }
-  ]
+  }
+
+  vector_dbs = [{
+    name      = "my_db"
+    keyspaces = ["main_keyspace", "other_keyspace"]
+    deletion_protection = false
+  }]
 }
 ```
 
@@ -82,50 +81,52 @@ Regardless of whether `auto_route53_setup` is true or not though, a custom domai
 | ------------------ | ----------- | ---- |
 | auto_route53_setup | If `true`, Route53 will be automatically set up. `hosted_zones` must be set if this is true.<br><br>Otherwise, you must set each domain to the output `alb_dns_name` w/ an A record. | `bool` |
 | hosted_zones       | A map of components (or a default value) to their hosted zones. The valid keys are {default, langflow, assistants}. For each, either `zone_id` or `zone_name` must be set. | <pre>optional(map(object({<br>  zone_id = optional(string)<br>  zone_name = optional(string)<br>})))</pre> |
-| acm_cert_arn       | The ARN of the ACM certificate to use. Required if auto_route53_setup is `false`. If auto_route53_setup is `true`, you may choose to set this; otherwise, one is manually created. | `optional(boolean)` |
+| acm_cert_arn       | The ARN of the ACM certificate to use. Required if auto_route53_setup is `false`. If auto_route53_setup is `true`, you may choose to set this; otherwise, one is manually created. | `optional(string)` |
 
-### `fargate_config` (optional)
+### `deployment_defaults` (optional)
 
-Options related to the deployment of the ECS on Fargate instances.
+Defaults for ECS deployments. Some fields may be overridable on a per-component basis.
 
 | Field                     | Description | Type |
 | ------------------------- | ----------- | ---- |
-| capacity_provider_weights | The weights to assign to the capacity providers.<br>If not set, it's a 20/80 split between Fargate and Fargate Spot.| <pre>optional(object({<br>  default_base  = number<br>  default_weight = number<br>  spot_base  = number<br>  spot_weight = number<br>}))</pre> | 
-
-### `langflow` (optional)
-
-Options regarding the langflow deployment. If not set, langflow is not created. Must have a custom domain at hand to use this.
-
-| Field      | Description | Type |
-| ---------- | ----------- | ---- |
-| version    | The image version to use for the deployment; defaults to "latest". | `optional(string)` |
-| domain     | The domain name to use for the service; used in the listener routing rules. | `string` |
-| env        | Environment variables to set for the service. | `optional(map(string))` |
-| containers | Options for the ECS service.<br>- cpu: The amount of CPU to allocate to the service. Defaults to 1024.<br>- memory: The amount of memory to allocate to the service. Defaults to 2048 (Mi).<br>- min_instances: The minimum number of instances to run. Defaults to 1.<br>- max_instances: The maximum number of instances to run. Defaults to 100. | <pre>optional(object({<br>  cpu           = optional(number)<br>  memory        = optional(number)<br>  min_instances = optional(number)<br>  max_instances = optional(number)<br>}))</pre> |
+| vpc_availability_zones    | Availability zones to be used if the VPC is auto-created by this module. Will not do anything if your own VPC is provided. | `optional(list(string))` |
+| capacity_provider_weights | The weights to assign to the capacity providers. If not set, it's a 20/80 split between Fargate and Fargate Spot.<br>  default_base: The base number of tasks to run on Fargate.<br>  default_weight: The relative weight for Fargate when scaling tasks.<br>  spot_base: The base number of tasks to run on Fargate Spot.<br>  spot_weight: The relative weight for Fargate Spot when scaling tasks. | <pre>optional(object({<br>  default_base  = number<br>  default_weight = number<br>  spot_base  = number<br>  spot_weight = number<br>}))</pre> |
+| min_instances             | The minimum number of instances to run. Defaults to 1. Must be >= 1. | `optional(number)` |
+| max_instances             | The maximum number of instances to run. Defaults to 20. | `optional(number)` |
 
 ### `assistants` (optional)
 
-Options regarding the astra-assistants-api deployment. If not set, assistants is not created. Must have a custom domain at hand to use this.
+Options for the Astra Assistant API service.
 
-| Field      | Description | Type |
-| ---------- | ----------- | ---- |
-| version    | The image version to use for the deployment; defaults to "latest". | `optional(string)` |
-| domain     | The domain name to use for the service; used in the listener routing rules. | `string` |
-| env        | Environment variables to set for the service. | `optional(map(string))` |
-| db         | Options for the database Astra Assistants uses.<br>- regions: The regions to deploy the database to. Defaults to the first available region.<br>- deletion_protection: Whether to enable deletion protection on the database.<br>- cloud_provider: The cloud provider to use for the database. Defaults to "gcp". | <pre>optional(object({<br>  regions             = optional(set(string))<br>  deletion_protection = optional(bool)<br>  cloud_provider      = optional(string)<br>}))</pre> |
-| containers | Options for the ECS service.<br>- cpu: The amount of CPU to allocate to the service. Defaults to 1024.<br>- memory: The amount of memory to allocate to the service. Defaults to 2048 (Mi).<br>- min_instances: The minimum number of instances to run. Defaults to 1.<br>- max_instances: The maximum number of instances to run. Defaults to 100. | <pre>optional(object({<br>  cpu           = optional(number)<br>  memory        = optional(number)<br>  min_instances = optional(number)<br>  max_instances = optional(number)<br>}))</pre> |
+| Field        | Description | Type |
+| ------------ | ----------- | ---- |
+| domain       | The domain name to use for the service; used in the listener routing rules. | `optional(string)` |
+| containers   | Environment variables to set for the service.<br>- cpu: The amount of CPU to allocate to the service. Defaults to 1024.<br>- memory: The amount of memory to allocate to the service. Defaults to 2048 (Mi). | <pre>optional(object({<br>  env    = optional(map(string))<br>  cpu    = optional(number)<br>  memory = optional(number)<br>}))</pre> |
+| deployment   | Options for the deployment.<br>- image_version: The image version to use for the deployment; defaults to "latest".<br>- min_instances: The minimum number of instances to run. Defaults to 1. Must be >= 1.<br>- max_instances: The maximum number of instances to run. Defaults to 20. | <pre>optional(object({<br>  image_version = optional(string)<br>  min_instances = optional(number)<br>  max_instances = optional(number)<br>}))</pre> |
+| astra_db     | Options for the database Astra Assistants uses.<br>- regions: The regions to deploy the database to. Defaults to the first available region.<br>- cloud_provider: The cloud provider to use for the database. Defaults to "aws".<br>- deletion_protection: The database can't be deleted when this value is set to true. The default is false. | <pre>optional(object({<br>  regions             = optional(set(string))<br>  deletion_protection = optional(bool)<br>  cloud_provider      = optional(string)<br>}))</pre> |
 
-### `vector_dbs` optional
+### `langflow` (optional)
 
-A list of configuration for each vector-enabled DB you may want to create/deploy. No custom domain is required to use this.
+Options for the Langflow service.
 
-| Field                | Description                                                                    | Type                    |
-| -------------------- | ------------------------------------------------------------------------------ | ----------------------- |
-| name                 | The name of the database to create.                                            | `string`                |
-| regions              | The regions to deploy the database to. Defaults to the first available region. | `optional(set(string))` |
-| keyspaces            | The keyspaces to use for the database. The first keyspace will be used as the initial one for the database. Defaults to just "default_keyspace". | `optional(list(string))` |
-| cloud_provider       | The cloud provider to use for the database. Defaults to "aws".                 | `optional(string)`      |
-| deletion_protection  | Whether to enable deletion protection on the database.                         | `optional(bool)`        |
+| Field        | Description | Type |
+| ------------ | ----------- | ---- |
+| domain       | The domain name to use for the service; used in the listener routing rules. | `optional(string)` |
+| containers   | Environment variables to set for the service.<br>- cpu: The amount of CPU to allocate to the service. Defaults to 1024.<br>- memory: The amount of memory to allocate to the service. Defaults to 2048 (Mi). | <pre>optional(object({<br>  env    = optional(map(string))<br>  cpu    = optional(number)<br>  memory = optional(number)<br>}))</pre> |
+| deployment   | Options for the deployment.<br>- image_version: The image version to use for the deployment; defaults to "latest".<br>- min_instances: The minimum number of instances to run. Defaults to 1. Must be >= 1.<br>- max_instances: The maximum number of instances to run. Defaults to 20. | <pre>optional(object({<br>  image_version = optional(string)<br>  min_instances = optional(number)<br>  max_instances = optional(number)<br>}))</pre> |
+| postgres_db  | Creates a basic Postgres instance to enable proper data persistence. Recommended to provide your own via the LANGFLOW_DATBASE_URL env var in production use cases. Will default to ephemeral SQLite instances if not set.<br>- instance_class: Determines the computation and memory capacity of an Amazon RDS DB instance.<br>- availability_zone: The AZ for the RDS instance.<br>- deletion_protection: The database can't be deleted when this value is set to true. The default is false.<br>- initial_storage: The allocated storage in GiB. If max_storage is set, this argument represents the initial storage allocation, enabling storage autoscaling.<br>- max_storage: When configured, the upper limit to which Amazon RDS can automatically scale the storage of the DB instance. | <pre>optional(object({<br>  instance_class      = string<br>  availability_zone   = optional(string)<br>  deletion_protection = optional(bool)<br>  initial_storage     = optional(number)<br>  max_storage         = optional(number)<br>}))</pre> |
+
+### `vector_dbs` (optional)
+
+Quickly sets up vector-enabled Astra Databases for your project.
+
+| Field               | Description | Type |
+| ------------------- | ----------- | ---- |
+| name                | The name of the database to create. | `string` |
+| regions             | The regions to deploy the database to. Defaults to the first available region. | `optional(set(string))` |
+| keyspaces           | The keyspaces to use for the database. The first keyspace will be used as the initial one for the database. Defaults to just "default_keyspace". | `optional(list(string))` |
+| cloud_provider      | The cloud provider to use for the database. Defaults to "aws". | `optional(string)` |
+| deletion_protection | The database can't be deleted when this value is set to true. The default is false. | `optional(bool)` |
 
 ## Outputs
 

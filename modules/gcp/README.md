@@ -18,7 +18,6 @@ You may want a custom domain to attach to the Langflow/Assistants services, but 
 ```hcl
 module "datastax-ai-stack-gcp" {
   source  = "datastax/ai-stack/astra//modules/gcp"
-  version = "1.0.0-beta.1"
 
   project_config = {
     create_project = {
@@ -29,106 +28,103 @@ module "datastax-ai-stack-gcp" {
   domain_config = {
     auto_cloud_dns_setup = true
     managed_zones = {
-      default = { dns_name = "${var.domain}." }
+      default = { dns_name = "${var.dns_name}." }
     }
   }
 
   langflow = {
-    domain = "langflow.${var.domain}"
-    env = {
-      LANGFLOW_DATABASE_URL = var.langflow_db_url
-    }
-  }
-
-  assistants = {
-    db = {
-      regions             = ["us-east1"]
+    domain = "langflow.${var.dns_name}"
+    postgres_db = {
+      tier                = "db-f1-micro"
       deletion_protection = false
     }
   }
 
-  vector_dbs = [
-    {
-      name      = "my_vector_db"
-      keyspaces = ["my_keyspace1", "my_keyspace2"]
+  assistants = {
+    domain = "assistants.${var.dns_name}"
+    astra_db = {
+      deletion_protection = false
     }
-  ]
+  }
+
+  vector_dbs = [{
+    name      = "my_db"
+    keyspaces = ["main_keyspace", "other_keyspace"]
+    deletion_protection = false
+  }]
 }
 ```
 
 ## Required providers
 
-| Name   | Version  |
-|--------|----------|
-| astra  | >= 2.3.3 |
-| google | >= 5.0.0 |
+| Name   | Version   |
+|--------|-----------|
+| astra  | >= 2.3.3  |
+| google | >= 5.12.0 |
 
 ## Inputs
 
-### `project_config` (required if using GCP-deployed components)
+### `project_config` (required)
 
-Options related to the project these deployments are tied to. If project_id is set, that project will be used. If create_project is set, a project will be created with the given options. One of the two must be set.
+Sets the project to use for the deployment. If `project_id` is set, that project will be used. If `create_project` is set, a project will be created with a randomly generated ID and the given options. One of the two must be set.
 
-If further customization is desired, the project can be created manually and the project_id can be set. The Google "project-factory" module can be used to create a project with more options.
+| Field             | Description | Type |
+| ----------------- | ----------- | ---- |
+| project_id        | The ID of the project to use. | `optional(string)` |
+| create_project    | Options to use when creating a new project.<br>- name: The name of the project to create. If not set, a random name will be generated.<br>- org_id: The ID of the organization to create the project in.<br>- billing_account: The ID of the billing account to associate with the project. | <pre>optional(object({<br>  name            = optional(string)<br>  org_id          = optional(string)<br>  billing_account = string<br>}))</pre> |
 
-| Field          | Description | Type |
-| -------------- | ----------- | ---- |
-| project_id     | The ID of the project to use. | `optional(string)` | 
-| create_project | Options to use when creating a new project.<br>- name: The name of the project to create. If not set, a random name will be generated.<br>- org_id: The ID of the organization to create the project in.<br>- billing_account: The ID of the billing account to associate with the project. | <pre>optional(object({<br>  name            = optional(string)<br>  org_id          = optional(string)<br>  billing_account = string<br>}))</pre> |
+### `domain_config` (required if using DNS)
 
-### `domain_config` (required if using GCP-deployed components)
+Options for setting up domain names and DNS records.
 
-Options related to DNS/HTTPS setup. If you create a managed zone on Cloud DNS, this module is able to handle the most of this for you.
+| Field                  | Description | Type |
+| ---------------------- | ----------- | ---- |
+| auto_cloud_dns_setup   | If `true`, Cloud DNS will be automatically set up. `managed_zones` must be set if this is true. If true, a `name_servers` map will be output; otherwise, you must set each domain to the output `load_balancer_ip` w/ an A record. | `bool` |
+| managed_zones          | A map of components (or a default value) to their managed zones. The valid keys are {default, langflow, assistants}. For each, either `dns_name` or `zone_name` must be set.<br>- dns_name: The DNS name (e.g. "example.com.") to use for the managed zone (which will be created).<br>- zone_name: The ID of the existing managed zone to use. | <pre>optional(map(object({<br>  dns_name  = optional(string)<br>  zone_name = optional(string)<br>})))</pre> |
 
-Note that it may take a bit for the custom domain to properly work while the SSL cert is being set up.
+### `deployment_defaults` (optional)
 
-| Field                | Description | Type |
-| -------------------- | ----------- | ---- |
-| auto_cloud_dns_setup | If true, Cloud DNS will be automatically set up. `managed_zones` must be set if this is true. If true, a `name_servers` map will be output, which you must add to your DNS records; otherwise, you must set each domain to the output `load_balancer_ip` w/ an A record. | `bool` |
-| managed_zones        | A map of components (or a default value) to their managed zones. The valid keys are {default, langflow, assistants}. For each, either dns_name or zone_name must be set.<br>- dns_name: The DNS name (e.g. "example.com.") to use for the managed zone (which will be created).<br>- zone_name: The ID of the existing managed zone to use. | <pre>optional(map(object({<br>  dns_name  = optional(string)<br>  zone_name = optional(string)<br>})))</pre> |
+Defaults for ECS deployments. Some fields may be overridable on a per-component basis.
 
-### `cloud_run_config` (optional)
-
-Sets global options for the Cloud Run services.
-
-| Field    | Description                                                                                              | Type               |
-| -------- | -------------------------------------------------------------------------------------------------------- | ------------------ |
-| location | The location to deploy the Cloud Run services to. If not set, the first available location will be used. | `optional(string)` | 
-
-### `langflow` (optional)
-
-Options regarding the langflow deployment. If not set, langflow is not created. If no custom domain is set, the Cloud Run service's ingress will be set to "ALL" and expose a dedicated service URI.
-
-| Field      | Description | Type |
-| ---------- | ----------- | ---- |
-| version    | The image version to use for the deployment; defaults to "latest". | `optional(string)` |
-| domain     | The domain name to use for the service; used in the URL map. | `optional(string)` |
-| env        | Environment variables to set for the service. | `optional(map(string))` |
-| containers | Options for the ECS service.<br>- cpu: The amount of CPU to allocate to the service. Defaults to "1".<br>- memory: The amount of memory to allocate to the service. Defaults to "2048Mi".<br>- min_instances: The minimum number of instances to run. Defaults to 0.<br>- max_instances: The maximum number of instances to run. Defaults to 100. | <pre>optional(object({<br>  cpu           = optional(string)<br>  memory        = optional(string)<br>  min_instances = optional(number)<br>  max_instances = optional(number)<br>}))</pre> |
+| Field           | Description | Type |
+| --------------- | ----------- | ---- |
+| min_instances   | The minimum number of instances to run. Defaults to 1. Must be >= 1. | `optional(number)` |
+| max_instances   | The maximum number of instances to run. Defaults to 20. | `optional(number)` |
+| location        | The location of the cloud run services. | `optional(string)` |
 
 ### `assistants` (optional)
 
-Options regarding the astra-assistants-api deployment. If not set, assistants is not created. If no custom domain is set, the Cloud Run service's ingress will be set to "ALL" and expose a dedicated service URI.
+Options for the Astra Assistant API service.
 
-| Field      | Description | Type |
-| ---------- | ----------- | ---- |
-| version    | The image version to use for the deployment; defaults to "latest". | `optional(string)` |
-| domain     | The domain name to use for the service; used in the URL map. | `optional(string)` |
-| env        | Environment variables to set for the service. | `optional(map(string))` |
-| db         | Options for the database Astra Assistants uses.<br>- regions: The regions to deploy the database to. Defaults to the first available region.<br>- deletion_protection: Whether to enable deletion protection on the database.<br>- cloud_provider: The cloud provider to use for the database. Defaults to "gcp". | <pre>optional(object({<br>  regions             = optional(set(string))<br>  deletion_protection = optional(bool)<br>  cloud_provider      = optional(string)<br>}))</pre> |
-| containers | Options for the ECS service.<br>- cpu: The amount of CPU to allocate to the service. Defaults to "1".<br>- memory: The amount of memory to allocate to the service. Defaults to "2048Mi".<br>- min_instances: The minimum number of instances to run. Defaults to 0.<br>- max_instances: The maximum number of instances to run. Defaults to 100. | <pre>optional(object({<br>  cpu           = optional(string)<br>  memory        = optional(string)<br>  min_instances = optional(number)<br>  max_instances = optional(number)<br>}))</pre> |
+| Field        | Description | Type |
+| ------------ | ----------- | ---- |
+| domain       | The domain name to use for the service; used in the listener routing rules. | `optional(string)` |
+| containers   | Environment variables to set for the service.<br>- cpu: The amount of CPU to allocate to the service. Defaults to "1".<br>- memory: The amount of memory to allocate to the service. Defaults to "2048Mi". | <pre>optional(object({<br>  env    = optional(map(string))<br>  cpu    = optional(string)<br>  memory = optional(string)<br>}))</pre> |
+| deployment   | Options for the deployment.<br>- image_version: The image version to use for the deployment; defaults to "latest".<br>- min_instances: The minimum number of instances to run. Defaults to 1. Must be >= 1.<br>- max_instances: The maximum number of instances to run. Defaults to 20.<br>- location: The location of the cloud run service. | <pre>optional(object({<br>  image_version   = optional(string)<br>  min_instances   = optional(number)<br>  max_instances   = optional(number)<br>  location        = optional(string)<br>}))</pre> |
+| astra_db     | Options for the database Astra Assistants uses. Will be created even if this is not set.<br>- regions: The regions to deploy the database to. Defaults to the first available region.<br>- cloud_provider: The cloud provider to use for the database. Defaults to "gcp".<br>- deletion_protection: The database can't be deleted when this value is set to true. The default is false. | <pre>optional(object({<br>  regions             = optional(set(string))<br>  deletion_protection = optional(bool)<br>  cloud_provider      = optional(string)<br>}))</pre> |
 
-### `vector_dbs` optional
+### `langflow` (optional)
 
-A list of configuration for each vector-enabled DB you may want to create/deploy. No custom domain is required to use this.
+Options for the Langflow service.
 
-| Field                | Description                                                                    | Type                    |
-| -------------------- | ------------------------------------------------------------------------------ | ----------------------- |
-| name                 | The name of the database to create.                                            | `string`                |
-| regions              | The regions to deploy the database to. Defaults to the first available region. | `optional(set(string))` |
-| keyspaces            | The keyspaces to use for the database. The first keyspace will be used as the initial one for the database. Defaults to just "default_keyspace". | `optional(list(string))` |
-| cloud_provider       | The cloud provider to use for the database. Defaults to "gcp".                 | `optional(string)`      |
-| deletion_protection  | Whether to enable deletion protection on the database.                         | `optional(bool)`        |
+| Field        | Description | Type |
+| ------------ | ----------- | ---- |
+| domain       | The domain name to use for the service; used in the listener routing rules. | `optional(string)` |
+| containers   | Environment variables to set for the service.<br>- cpu: The amount of CPU to allocate to the service. Defaults to 1024.<br>- memory: The amount of memory to allocate to the service. Defaults to 2048 (Mi). | <pre>optional(object({<br>  env    = optional(map(string))<br>  cpu    = optional(string)<br>  memory = optional(string)<br>}))</pre> |
+| deployment   | Options for the deployment.<br>- image_version: The image version to use for the deployment; defaults to "latest".<br>- min_instances: The minimum number of instances to run. Defaults to 1. Must be >= 1.<br>- max_instances: The maximum number of instances to run. Defaults to 20.<br>- location: The location of the cloud run service. | <pre>optional(object({<br>  image_version   = optional(string)<br>  min_instances   = optional(number)<br>  max_instances   = optional(number)<br>  location        = optional(string)<br>}))</pre> |
+| postgres_db  | Creates a basic Postgres instance to enable proper data persistence. Recommended to provide your own via the LANGFLOW_DATBASE_URL env var in production use cases. Will default to ephemeral SQLite instances if not set.<br>- tier: The machine type to use. https://cloud.google.com/sql/docs/mysql/admin-api/rest/v1beta4/tiers<br>- region: The region for the db instance; defaults to the provider's region.<br>- deletion_protection: The database can't be deleted when this value is set to true. The default is false.<br>- initial_storage: The size of the data disk in GB. Must be >= 10GB.<br>- max_storage: The maximum size to which the storage capacity can be autoscaled. The default value is 0, which specifies that there is no limit. | <pre>optional(object({<br>  tier                = string<br>  region              = optional(string)<br>  deletion_protection = optional(bool)<br>  initial_storage     = optional(number)<br>  max_storage         = optional(number)<br>}))</pre> |
+
+### `vector_dbs` (optional)
+
+Quickly sets up vector-enabled Astra Databases for your project.
+
+| Field               | Description | Type |
+| ------------------- | ----------- | ---- |
+| name                | The name of the database to create. | `string` |
+| regions             | The regions to deploy the database to. Defaults to the first available region. | `optional(set(string))` |
+| keyspaces           | The keyspaces to use for the database. The first keyspace will be used as the initial one for the database. Defaults to just "default_keyspace". | `optional(list(string))` |
+| cloud_provider      | The cloud provider to use for the database. Defaults to "gcp". | `optional(string)` |
+| deletion_protection | The database can't be deleted when this value is set to true. The default is false. | `optional(bool)` |
 
 ## Outputs
 

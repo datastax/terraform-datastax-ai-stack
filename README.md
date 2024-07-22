@@ -16,36 +16,35 @@ how to use it.
 
 ```hcl
 module "datastax-ai-stack-aws" {
-  source  = "datastax/ai-stack/astra//modules/aws"
-  version = "1.0.0-beta.1"
+  source = "datastax/ai-stack/astra//modules/aws"
 
   domain_config = {
     auto_route53_setup = true
     hosted_zones = {
-      default = { zone_name = var.domain }
+      default = { zone_name = var.dns_zone_name }
     }
   }
 
   langflow = {
-    domain = "langflow.${var.domain}"
-    env = {
-      LANGFLOW_DATABASE_URL = var.langflow_db_url
-    }
-  }
-
-  assistants = {
-    domain = "assistants.${var.domain}"
-    db = {
+    domain = "langflow.${var.dns_zone_name}"
+    postgres_db = {
+      instance_class      = "db.t3.micro"
       deletion_protection = false
     }
   }
 
-  vector_dbs = [
-    {
-      name      = "my_vector_db"
-      keyspaces = ["my_keyspace1", "my_keyspace2"]
+  assistants = {
+    domain = "assistants.${var.dns_zone_name}"
+    astra_db = {
+      deletion_protection = false
     }
-  ]
+  }
+
+  vector_dbs = [{
+    name      = "my_db"
+    keyspaces = ["main_keyspace", "other_keyspace"]
+    deletion_protection = false
+  }]
 }
 ```
 
@@ -53,8 +52,7 @@ module "datastax-ai-stack-aws" {
 
 ```hcl
 module "datastax-ai-stack-gcp" {
-  source  = "datastax/ai-stack/astra//modules/gcp"
-  version = "1.0.0-beta.1"
+  source = "datastax/ai-stack/astra//modules/gcp"
 
   project_config = {
     create_project = {
@@ -65,30 +63,30 @@ module "datastax-ai-stack-gcp" {
   domain_config = {
     auto_cloud_dns_setup = true
     managed_zones = {
-      default = { dns_name = "${var.domain}." }
+      default = { dns_name = "${var.dns_name}." }
     }
   }
 
   langflow = {
-    domain = "langflow.${var.domain}"
-    env = {
-      LANGFLOW_DATABASE_URL = var.langflow_db_url
-    }
-  }
-
-  assistants = {
-    db = {
-      regions             = ["us-east1"]
+    domain = "langflow.${var.dns_name}"
+    postgres_db = {
+      tier                = "db-f1-micro"
       deletion_protection = false
     }
   }
 
-  vector_dbs = [
-    {
-      name      = "my_vector_db"
-      keyspaces = ["my_keyspace1", "my_keyspace2"]
+  assistants = {
+    domain = "assistants.${var.dns_name}"
+    astra_db = {
+      deletion_protection = false
     }
-  ]
+  }
+
+  vector_dbs = [{
+    name      = "my_db"
+    keyspaces = ["main_keyspace", "other_keyspace"]
+    deletion_protection = false
+  }]
 }
 ```
 
@@ -96,12 +94,11 @@ module "datastax-ai-stack-gcp" {
 
 ```hcl
 module "datastax-ai-stack-azure" {
-  source  = "datastax/ai-stack/astra//modules/azure"
-  version = "1.0.0-beta.1"
+  source = "datastax/ai-stack/astra//modules/azure"
 
   resource_group_config = {
     create_resource_group = {
-      name     = "enterprise-ai-stack"
+      name     = "datastax-ai-stack"
       location = "East US"
     }
   }
@@ -109,29 +106,28 @@ module "datastax-ai-stack-azure" {
   domain_config = {
     auto_azure_dns_setup = true
     dns_zones = {
-      default = { dns_zone = "az.enterprise-ai-stack.com" }
+      default = { dns_zone = var.dns_zone }
     }
   }
 
   langflow = {
     subdomain = "langflow"
-    env = {
-      LANGFLOW_DATABASE_URL = var.langflow_db_url
+    postgres_db = {
+      sku_name            = "B_Standard_B1ms"
     }
   }
 
   assistants = {
-    subdomain = ""
-    db = {
+    subdomain = "assistants"
+    astra_db = {
       deletion_protection = false
     }
   }
 
-  vector_dbs = [
-    {
-      name      = "my_vector_db"
-      keyspaces = ["my_keyspace1", "my_keyspace2"]
-    }
-  ]
+  vector_dbs = [{
+    name                = "my_db"
+    keyspaces           = ["main_keyspace", "other_keyspace"]
+    deletion_protection = false
+  }]
 }
 ```
