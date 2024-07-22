@@ -84,6 +84,15 @@ Options for setting up domain names and DNS records.
 | auto_azure_dns_setup  | If `true`, AzureDNS will be automatically set up. `dns_zones` must be set if this is true. Otherwise, the custom domains, if desired, must be set manually. | `bool` |
 | dns_zones             | A map of components (or a default value) to their DNS zones. The valid keys are {default, langflow, assistants}. For each, `dns_zone` must be set, and `resource_group_name` may be set for further DNS zone filtering.<br>- dns_zone: The name (e.g. "example.com") of the existing DNS zone to use.<br>- resource_group_name: The resource group that the DNS zone is in. If not set, the first DNS zone matching the name will be used. | <pre>optional(map(object({<br>  dns_zone            = string<br>  resource_group_name = optional(string)<br>})))</pre> |
 
+### `deployment_defaults` (optional)
+
+Defaults for ECS deployments. Some fields may be overridable on a per-component basis.
+
+| Field                     | Description | Type |
+| ------------------------- | ----------- | ---- |
+| min_instances             | The minimum number of instances to run. Defaults to 1. Must be >= 1. | `optional(number)` |
+| max_instances             | The maximum number of instances to run. Defaults to 20. | `optional(number)` |
+
 ### `assistants` (optional)
 
 Options for the Astra Assistant API service.
@@ -93,7 +102,7 @@ Options for the Astra Assistant API service.
 | subdomain    | The subdomain to use for the service, if `domain_config.auto_azure_dns_setup` is true. Should be null if `domain_config.auto_azure_dns_setup` is false. | `optional(string)` |
 | containers   | Environment variables to set for the service.<br>- cpu: The amount of CPU to allocate to the service. Defaults to 1024.<br>- memory: The amount of memory to allocate to the service. Defaults to "2048Mi". | <pre>optional(object({<br>  env    = optional(map(string))<br>  cpu    = optional(number)<br>  memory = optional(string)<br>}))</pre> |
 | deployment   | Options for the deployment.<br>- image_version: The image version to use for the deployment; defaults to "latest".<br>- min_instances: The minimum number of instances to run. Defaults to 1. Must be >= 1.<br>- max_instances: The maximum number of instances to run. Defaults to 20. | <pre>optional(object({<br>  image_version = optional(string)<br>  min_instances = optional(number)<br>  max_instances = optional(number)<br>}))</pre> |
-| astra_db     | Options for the database Astra Assistants uses. Will be created even if this is not set.<br>- regions: The regions to deploy the database to. Defaults to the first available region.<br>- cloud_provider: The cloud provider to use for the database. Defaults to "gcp".<br>- deletion_protection: The database can't be deleted when this value is set to true. The default is false. | <pre>object({<br>  regions             = optional(set(string))<br>  deletion_protection = optional(bool)<br>  cloud_provider      = optional(string)<br>})</pre> |
+| astra_db     | Options for the database Astra Assistants uses. Will be created even if this is not set.<br>- regions: The regions to deploy the database to. Defaults to the first available region.<br>- cloud_provider: The cloud provider to use for the database. Defaults to "azure".<br>- deletion_protection: The database can't be deleted when this value is set to true. The default is false. | <pre>object({<br>  regions             = optional(set(string))<br>  deletion_protection = optional(bool)<br>  cloud_provider      = optional(string)<br>})</pre> |
 
 ### `langflow` (optional)
 

@@ -26,7 +26,6 @@ variable "config" {
       image_version   = optional(string)
       min_instances   = optional(number)
       max_instances   = optional(number)
-      service_account = optional(string)
       location        = string
     }))
   })

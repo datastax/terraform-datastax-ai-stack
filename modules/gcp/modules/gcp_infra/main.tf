@@ -1,6 +1,6 @@
 locals {
   project_id = coalesce(var.project_config.project_id, try(module.project-factory[0].project_id, null))
-  location   = try(coalesce(var.cloud_run_config.location), data.google_cloud_run_locations.available.locations[0])
+  location   = try(coalesce(var.deployment_defaults.location), data.google_cloud_run_locations.available.locations[0])
 }
 
 data "google_cloud_run_locations" "available" {

@@ -121,7 +121,7 @@ variable "assistants" {
 
     astra_db: Options for the database Astra Assistants uses. Will be created even if this is not set.
       regions: The regions to deploy the database to. Defaults to the first available region.
-      cloud_provider: The cloud provider to use for the database. Defaults to "gcp".
+      cloud_provider: The cloud provider to use for the database. Defaults to "aws".
       deletion_protection: The database can't be deleted when this value is set to true. The default is false.
   EOF
 }
@@ -168,7 +168,7 @@ variable "langflow" {
       instance_class: Determines the computation and memory capacity of an Amazon RDS DB instance. https://aws.amazon.com/rds/instance-types/
       availability_zone: The AZ for the RDS instance.
       deletion_protection: The database can't be deleted when this value is set to true. The default is false.
-      initial_storage: The allocated storage in gibibytes. If max_storage is set, this argument represents the initial storage allocation, enabling storage autoscaling.
+      initial_storage: The allocated storage in GiB. If max_storage is set, this argument represents the initial storage allocation, enabling storage autoscaling.
       max_storage: When configured, the upper limit to which Amazon RDS can automatically scale the storage of the DB instance.
   EOF
 }
@@ -193,7 +193,7 @@ variable "vector_dbs" {
 
     keyspaces: The keyspaces to use for the database. The first keyspace will be used as the initial one for the database. Defaults to just "default_keyspace".
 
-    cloud_provider: The cloud provider to use for the database. Defaults to "gcp".
+    cloud_provider: The cloud provider to use for the database. Defaults to "aws".
 
     deletion_protection: The database can't be deleted when this value is set to true. The default is false.
   EOF

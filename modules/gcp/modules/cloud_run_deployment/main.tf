@@ -8,7 +8,7 @@ resource "google_cloud_run_v2_service" "this" {
   location = var.config.deployment.location
 
   template {
-    service_account = try(coalesce(var.config.deployment.service_account), try(google_service_account.cloud_run_sa[0].email, null))
+    service_account = try(google_service_account.cloud_run_sa[0].email, null)
 
     containers {
       image   = "${var.container_info.image_name}:${try(coalesce(var.config.deployment.image_version), "latest")}"

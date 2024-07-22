@@ -57,6 +57,23 @@ variable "domain_config" {
   EOF
 }
 
+variable "deployment_defaults" {
+  type = object({
+    min_instances   = optional(number)
+    max_instances   = optional(number)
+  })
+  nullable = false
+  default  = {}
+
+  description = <<EOF
+    Defaults for container app deployments. Some fields may be overridable on a per-component basis.
+
+    min_instances: The minimum number of instances to run. Defaults to 1. Must be >= 1.
+
+    max_instances: The maximum number of instances to run. Defaults to 20.
+  EOF
+}
+
 variable "assistants" {
   type = object({
     subdomain = optional(string)
@@ -95,7 +112,7 @@ variable "assistants" {
 
     astra_db: Options for the database Astra Assistants uses. Will be created even if this is not set.
       regions: The regions to deploy the database to. Defaults to the first available region.
-      cloud_provider: The cloud provider to use for the database. Defaults to "gcp".
+      cloud_provider: The cloud provider to use for the database. Defaults to "azure".
       deletion_protection: The database can't be deleted when this value is set to true. The default is false.
   EOF
 }

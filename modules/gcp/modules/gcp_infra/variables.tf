@@ -10,7 +10,7 @@ variable "project_config" {
   nullable = false
 }
 
-variable "cloud_run_config" {
+variable "deployment_defaults" {
   type = object({
     location = optional(string)
   })

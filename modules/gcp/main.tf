@@ -30,7 +30,7 @@ module "gcp_infra" {
   count  = local.gcp_infra_checks_pass ? 1 : 0
 
   project_config   = var.project_config
-  cloud_run_config = var.cloud_run_config
+  deployment_defaults = var.deployment_defaults
   domain_config    = var.domain_config
 
   components = {
