@@ -1,9 +1,9 @@
 variable "astra_token" {
-  type = string
+  type     = string
   nullable = false
 }
 
 variable "dns_zone" {
-  type = string
+  type     = string
   nullable = false
 }

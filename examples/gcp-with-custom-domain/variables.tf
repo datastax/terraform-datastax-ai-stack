@@ -1,10 +1,10 @@
 variable "astra_token" {
-  type = string
+  type     = string
   nullable = false
 }
 
 variable "google_region" {
-  type = string
+  type    = string
   default = "us-central1"
 }
 
@@ -14,6 +14,6 @@ variable "billing_account" {
 }
 
 variable "dns_name" {
-  type = string
+  type     = string
   nullable = false
 }

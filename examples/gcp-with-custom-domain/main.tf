@@ -38,8 +38,8 @@ module "datastax-ai-stack-gcp" {
   }
 
   vector_dbs = [{
-    name      = "my_db"
-    keyspaces = ["main_keyspace", "other_keyspace"]
+    name                = "my_db"
+    keyspaces           = ["main_keyspace", "other_keyspace"]
     deletion_protection = false
   }]
 }

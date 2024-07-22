@@ -22,7 +22,7 @@ module "datastax-ai-stack-azure" {
 
   langflow = {
     postgres_db = {
-      sku_name            = "B_Standard_B1ms"
+      sku_name = "B_Standard_B1ms"
     }
   }
 

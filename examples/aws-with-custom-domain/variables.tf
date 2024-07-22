@@ -1,14 +1,14 @@
 variable "astra_token" {
-  type = string
+  type     = string
   nullable = false
 }
 
 variable "aws_profile" {
-  type = string
+  type    = string
   default = null
 }
 
 variable "dns_zone_name" {
-  type = string
+  type     = string
   nullable = false
 }

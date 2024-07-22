@@ -1,5 +1,5 @@
 variable "astra_token" {
-  type = string
+  type     = string
   nullable = false
 }
 
