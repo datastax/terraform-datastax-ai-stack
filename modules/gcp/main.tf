@@ -45,7 +45,7 @@ module "assistants" {
   infrastructure = local.infrastructure
 
   config = merge(var.assistants, {
-    deployment = merge(var.deployment_defaults, { for k, v in coalesce(var.assistants.deployment, {}) : k => v if v != null })
+    deployment = merge(local.deployment_defaults, { for k, v in coalesce(var.assistants.deployment, {}) : k => v if v != null })
   })
 }
 
@@ -56,7 +56,7 @@ module "langflow" {
   infrastructure = local.infrastructure
 
   config = merge(var.langflow, {
-    deployment = merge(var.deployment_defaults, { for k, v in coalesce(var.langflow.deployment, {}) : k => v if v != null })
+    deployment = merge(local.deployment_defaults, { for k, v in coalesce(var.langflow.deployment, {}) : k => v if v != null })
   })
 }
 

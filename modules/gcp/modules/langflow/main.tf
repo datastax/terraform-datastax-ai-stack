@@ -36,10 +36,11 @@ output "service_uri" {
 }
 
 module "cloud_run_deployment" {
-  source         = "../cloud_run_deployment"
-  container_info = local.container_info
-  infrastructure = var.infrastructure
-  config         = local.merged_config
+  source           = "../cloud_run_deployment"
+  container_info   = local.container_info
+  infrastructure   = var.infrastructure
+  config           = local.merged_config
+  using_managed_db = local.using_managed_db
 }
 
 resource "google_sql_database_instance" "this" {
@@ -70,6 +71,8 @@ resource "google_sql_database" "this" {
   name     = "dtsx-langflow-postgres-db"
   instance = google_sql_database_instance.this[0].name
   project  = var.infrastructure.project_id
+
+  depends_on = [google_sql_user.admin]
 }
 
 resource "random_string" "admin_password" {

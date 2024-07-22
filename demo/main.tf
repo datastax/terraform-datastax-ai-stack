@@ -16,12 +16,12 @@
 #     }
 #   }
 
-#   assistants = {
-#     domain = "assistants.enterprise-ai-stack.com"
-#     managed_db = {
-#       deletion_protection = false
-#     }
-#   }
+#   # assistants = {
+#   #   domain = "assistants.enterprise-ai-stack.com"
+#   #   managed_db = {
+#   #     deletion_protection = false
+#   #   }
+#   # }
 
 #   # vector_dbs = [{
 #   #   name      = "my_db"
@@ -54,13 +54,13 @@
 #     }
 #   }
 
-#   assistants = {
-#     # domain = "assistants.gcp.enterprise-ai-stack.com"
-#     managed_db = {
-#       regions             = ["us-east1"]
-#       deletion_protection = false
-#     }
-#   }
+#   # assistants = {
+#   #   # domain = "assistants.gcp.enterprise-ai-stack.com"
+#   #   managed_db = {
+#   #     regions             = ["us-east1"]
+#   #     deletion_protection = false
+#   #   }
+#   # }
 
 #   # vector_dbs = [{
 #   #   name      = "my_db"
@@ -90,16 +90,15 @@ module "datastax-ai-stack-azure" {
     subdomain = "langflow"
     managed_db = {
       sku_name            = "B_Standard_B1ms"
-      deletion_protection = false
     }
   }
 
-  assistants = {
-    subdomain = "assistants"
-    managed_db = {
-      deletion_protection = false
-    }
-  }
+  # assistants = {
+  #   subdomain = "assistants"
+  #   managed_db = {
+  #     deletion_protection = false
+  #   }
+  # }
 
   # vector_dbs = [{
   #   name                = "my_db"

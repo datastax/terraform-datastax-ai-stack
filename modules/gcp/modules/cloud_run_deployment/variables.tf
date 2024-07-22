@@ -9,6 +9,11 @@ variable "container_info" {
   })
 }
 
+variable "using_managed_db" {
+  type    = bool
+  default = false
+}
+
 variable "config" {
   type = object({
     domain = optional(string)
@@ -22,7 +27,7 @@ variable "config" {
       min_instances   = optional(number)
       max_instances   = optional(number)
       service_account = optional(string)
-      location        = optional(string)
+      location        = string
     }))
   })
 }

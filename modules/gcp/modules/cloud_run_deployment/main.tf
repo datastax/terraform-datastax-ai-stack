@@ -1,6 +1,5 @@
 locals {
-  csql_instances   = var.container_info.csql_instance != null ? [var.container_info.csql_instance] : []
-  using_managed_db = length(local.csql_instances) > 0
+  csql_instances = var.using_managed_db ? [var.container_info.csql_instance] : []
 }
 
 resource "google_cloud_run_v2_service" "this" {
@@ -19,7 +18,7 @@ resource "google_cloud_run_v2_service" "this" {
         http_get {
           path = var.container_info.health_path
         }
-        initial_delay_seconds = 60
+        initial_delay_seconds = 120
       }
 
       resources {
@@ -83,14 +82,14 @@ resource "google_cloud_run_service_iam_member" "public_access" {
 }
 
 resource "google_service_account" "cloud_run_sa" {
-  count        = local.using_managed_db ? 1 : 0
+  count        = var.using_managed_db ? 1 : 0
   project      = var.infrastructure.project_id
   account_id   = "cloud-run-sa"
   display_name = "Cloud Run Service Account"
 }
 
 resource "google_project_iam_member" "cloud_sql_client" {
-  count   = local.using_managed_db ? 1 : 0
+  count   = var.using_managed_db ? 1 : 0
   project = var.infrastructure.project_id
   role    = "roles/cloudsql.client"
   member  = "serviceAccount:${google_service_account.cloud_run_sa[0].email}"

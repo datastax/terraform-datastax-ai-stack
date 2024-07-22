@@ -3,7 +3,7 @@ provider "astra" {
 }
 
 provider "google" {
-  region = "us-west-2"
+  region = "us-central1"
 }
 
 provider "aws" {

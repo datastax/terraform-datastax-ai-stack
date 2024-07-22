@@ -11,7 +11,7 @@ variable "config" {
       min_instances   = optional(number)
       max_instances   = optional(number)
       service_account = optional(string)
-      location        = optional(string)
+      location        = string
     }))
     managed_db = optional(object({
       regions             = optional(set(string))
