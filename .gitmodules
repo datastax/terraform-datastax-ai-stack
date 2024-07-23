@@ -1,0 +1,9 @@
+[submodule "aws"]
+	path = aws
+	url = https://github.com/datastax/terraform-aws-astra-ai-stack
+[submodule "azure"]
+	path = azure
+	url = https://github.com/datastax/terraform-azure-astra-ai-stack
+[submodule "gcp"]
+	path = gcp
+	url = https://github.com/datastax/terraform-gcp-astra-ai-stack
