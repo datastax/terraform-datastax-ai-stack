@@ -7,10 +7,10 @@ variable "config" {
       memory = optional(string)
     }))
     deployment = optional(object({
-      image_version   = optional(string)
-      min_instances   = optional(number)
-      max_instances   = optional(number)
-      location        = string
+      image_version = optional(string)
+      min_instances = optional(number)
+      max_instances = optional(number)
+      location      = string
     }))
     astra_db = optional(object({
       regions             = optional(set(string))

@@ -1,9 +1,9 @@
 output "vpc_id" {
-  value = try(module.aws_infra.vpc_id, null)
+  value = try(module.aws_infra[0].vpc_id, null)
 }
 
 output "alb_dns_name" {
-  value = try(module.aws_infra.alb_dns_name, null)
+  value = try(module.aws_infra[0].alb_dns_name, null)
 }
 
 output "db_ids" {

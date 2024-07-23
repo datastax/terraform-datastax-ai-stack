@@ -3,15 +3,19 @@ output "vpc_id" {
 }
 
 output "alb_dns_name" {
-  value = module.alb.dns_name
+  value = {
+    for component, output in module.alb : component => output.dns_name
+  }
 }
 
 output "ecs_cluster_id" {
   value = module.ecs.cluster_id
 }
 
-output "target_groups" {
-  value = module.alb.target_groups
+output "target_group_arns" {
+  value = {
+    for config in var.components : config.name => try(module.alb[config.name].target_groups, module.alb["default"].target_groups)[config.name].arn
+  }
 }
 
 output "security_groups" {

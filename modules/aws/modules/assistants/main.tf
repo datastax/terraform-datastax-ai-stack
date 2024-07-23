@@ -1,6 +1,6 @@
 module "assistants_api_db" {
-  source         = "../astra_db"
-  
+  source = "../astra_db"
+
   cloud_provider = var.infrastructure.cloud_provider
 
   config = {
@@ -14,7 +14,7 @@ module "assistants_api_db" {
 
 locals {
   container_info = {
-    name        = "astra-assistants"
+    name        = "assistants"
     image       = "datastax/astra-assistants"
     port        = 8000
     entrypoint  = ["poetry", "run", "uvicorn", "impl.main:app", "--host", "0.0.0.0", "--port", "8000"]

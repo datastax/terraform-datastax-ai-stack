@@ -10,13 +10,8 @@ variable "domain_config" {
   default = null
 
   validation {
-    condition     = try(!(var.domain_config.auto_route53_setup == true && length(var.domain_config.hosted_zones) == 0), true)
+    condition     = try(var.domain_config.auto_route53_setup ? (length(coalesce(var.domain_config.hosted_zones, {})) > 0) : true, true)
     error_message = "auto_route53_setup requires hosted_zones to be provided"
-  }
-
-  validation {
-    condition     = try(!(var.domain_config.auto_route53_setup == false && var.domain_config.acm_cert_arn == null), true)
-    error_message = "must provide an acm_cert_arn if auto_route53_setup isn't true"
   }
 
   description = <<EOF
