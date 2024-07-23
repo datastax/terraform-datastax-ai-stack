@@ -73,9 +73,9 @@ variable "domain_config" {
 
 variable "deployment_defaults" {
   type = object({
-    min_instances   = optional(number)
-    max_instances   = optional(number)
-    location        = optional(string)
+    min_instances = optional(number)
+    max_instances = optional(number)
+    location      = optional(string)
   })
   nullable = false
   default  = {}
@@ -100,10 +100,10 @@ variable "assistants" {
       memory = optional(string)
     }))
     deployment = optional(object({
-      image_version   = optional(string)
-      min_instances   = optional(number)
-      max_instances   = optional(number)
-      location        = optional(string)
+      image_version = optional(string)
+      min_instances = optional(number)
+      max_instances = optional(number)
+      location      = optional(string)
     }))
     astra_db = optional(object({
       regions             = optional(set(string))
@@ -145,10 +145,10 @@ variable "langflow" {
       memory = optional(string)
     }))
     deployment = optional(object({
-      image_version   = optional(string)
-      min_instances   = optional(number)
-      max_instances   = optional(number)
-      location        = optional(string)
+      image_version = optional(string)
+      min_instances = optional(number)
+      max_instances = optional(number)
+      location      = optional(string)
     }))
     postgres_db = optional(object({
       tier                = string

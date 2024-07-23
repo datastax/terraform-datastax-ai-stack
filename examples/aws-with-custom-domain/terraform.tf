@@ -6,8 +6,8 @@ terraform {
       source  = "datastax/astra"
       version = ">= 2.3.3"
     }
-    azurerm = {
-      source  = "hashicorp/azurerm"
+    aws = {
+      source  = "hashicorp/aws"
       version = ">= 3.79.0"
     }
   }

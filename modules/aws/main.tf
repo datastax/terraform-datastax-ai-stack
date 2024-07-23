@@ -2,30 +2,32 @@ locals {
   create_assistants = var.assistants != null
   create_langflow   = var.langflow != null
 
-  infrastructure = {
-    cluster         = try(module.aws_infra[0].ecs_cluster_id, null)
-    security_groups = try(module.aws_infra[0].security_groups, null)
-    private_subnets = try(module.aws_infra[0].private_subnets, null)
-    public_subnets  = try(module.aws_infra[0].public_subnets, null)
-    cloud_provider  = "aws"
-  }
+  cloud_provider = "aws"
 
   components = [
     for each in [
       (local.create_assistants ? {
-        name        = module.assistants[0].container_info.name
+        name        = "assistants"
         port        = module.assistants[0].container_info.port
         domain      = var.assistants.domain
-        name_prefix = "assist"
+        name_prefix = "astapi"
       } : null),
       (local.create_langflow ? {
-        name        = module.langflow[0].container_info.name
+        name        = "langflow"
         port        = module.langflow[0].container_info.port
         domain      = var.langflow.domain
         name_prefix = "l-flow"
       } : null)
     ] : each if each != null
   ]
+
+  infrastructure = {
+    cluster         = try(module.aws_infra[0].ecs_cluster_id, null)
+    security_groups = try(module.aws_infra[0].security_groups, null)
+    private_subnets = try(module.aws_infra[0].private_subnets, null)
+    public_subnets  = try(module.aws_infra[0].public_subnets, null)
+    cloud_provider  = local.cloud_provider
+  }
 }
 
 module "aws_infra" {
@@ -43,7 +45,7 @@ module "assistants" {
   count  = local.create_assistants ? 1 : 0
 
   infrastructure   = local.infrastructure
-  target_group_arn = module.aws_infra[0].target_groups[module.assistants[0].container_info.name].arn
+  target_group_arn = module.aws_infra[0].target_group_arns["assistants"]
 
   config = merge(var.assistants, {
     deployment = merge(var.deployment_defaults, { for k, v in coalesce(var.assistants.deployment, {}) : k => v if v != null })
@@ -55,7 +57,7 @@ module "langflow" {
   count  = local.create_langflow ? 1 : 0
 
   infrastructure   = local.infrastructure
-  target_group_arn = module.aws_infra[0].target_groups[module.langflow[0].container_info.name].arn
+  target_group_arn = module.aws_infra[0].target_group_arns["langflow"]
 
   config = merge(var.langflow, {
     deployment = merge(var.deployment_defaults, { for k, v in coalesce(var.langflow.deployment, {}) : k => v if v != null })
@@ -69,6 +71,6 @@ module "vector_dbs" {
     for db in var.vector_dbs : db.name => db
   }
 
-  cloud_provider = local.infrastructure.cloud_provider
+  cloud_provider = local.cloud_provider
   config         = each.value
 }

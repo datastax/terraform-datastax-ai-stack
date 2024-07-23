@@ -59,8 +59,8 @@ variable "domain_config" {
 
 variable "deployment_defaults" {
   type = object({
-    min_instances   = optional(number)
-    max_instances   = optional(number)
+    min_instances = optional(number)
+    max_instances = optional(number)
   })
   nullable = false
   default  = {}

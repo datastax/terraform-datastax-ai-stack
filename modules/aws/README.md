@@ -11,9 +11,14 @@ It offers multiple easy-to-deploy components, including:
 
 You will, of course, need a valid AWS account, and have the `aws` provider set up.
 
-If using Langflow or Astra Assistants, you'll need a domain at hand to access those services.
+A custom domain is heavily recommended, but not necessary. If any service (e.g. Langflow or Astra Assistants API) is not
+given a domain, an additional ALB will have to be constructed to serve solely that service. Further, it'll be served
+over insecure http (if using langflow, you may need to apply [this](https://github.com/langflow-ai/langflow/issues/1508)
+issue workaround)
 
-To allow the module to configure necessary any DNS settings, you'll also need to have an AWS hosted zone set up; otherwise, your domains will have to be manually configured to point to the `alb_dns_name`.
+To allow the module to configure necessary any DNS settings, you'll also need to have an AWS hosted zone set up;
+otherwise, your domains will have to be manually configured to point to the `alb_dns_name`, and an acm cert arn will
+have to manually be provided.
 
 ## Basic usage
 
