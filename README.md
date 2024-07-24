@@ -1,11 +1,11 @@
-# Datastax AI stack (AWS)
+# DataStax AI Stack
 
-Terraform module which helps you quickly deploy an opinionated AI/RAG stack to your cloud provider of choice, provided by Datastax.
+A Terraform module which helps you quickly deploy an opinionated AI/RAG stack to your cloud provider of choice, provided by DataStax.
 
 It offers multiple easy-to-deploy components, including:
  - Langflow
  - Astra Assistants API
- - Vector databases
+ - Astra Vector Databases
 
 There are submodules for each supported cloud provider: AWS, GCP, and Azure. View each submodule's README for more information about
 how to use it.
