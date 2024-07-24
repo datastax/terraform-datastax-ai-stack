@@ -21,7 +21,8 @@ Module registry links:
 
 ```hcl
 module "datastax-ai-stack-aws" {
-  source = "datastax/ai-stack/astra//modules/aws"
+  source  = "datastax/ai-stack/aws"
+  version = "~> 1.0"
 
   domain_config = {
     auto_route53_setup = true
@@ -57,7 +58,8 @@ module "datastax-ai-stack-aws" {
 
 ```hcl
 module "datastax-ai-stack-gcp" {
-  source = "datastax/ai-stack/astra//modules/gcp"
+  source  = "datastax/ai-stack/gcp"
+  version = "~> 1.0"
 
   project_config = {
     create_project = {
@@ -99,7 +101,8 @@ module "datastax-ai-stack-gcp" {
 
 ```hcl
 module "datastax-ai-stack-azure" {
-  source = "datastax/ai-stack/astra//modules/azure"
+  source  = "datastax/ai-stack/azure"
+  version = "~> 1.0"
 
   resource_group_config = {
     create_resource_group = {
