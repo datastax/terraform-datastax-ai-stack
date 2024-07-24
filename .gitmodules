@@ -7,3 +7,4 @@
 [submodule "gcp"]
 	path = gcp
 	url = https://github.com/datastax/terraform-gcp-astra-ai-stack
+	branch = master
